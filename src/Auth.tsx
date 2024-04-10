@@ -1,5 +1,5 @@
 import firebase from "firebase/compat/app";
-import "firebase/firestore";
+import "firebase/compat/firestore";
 // import "firebase/compat/auth";
 
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -28,7 +28,7 @@ firebase.initializeApp({
 });
 
 const auth = getAuth();
-// const db = firebase.firestore();
+const db = firebase.firestore();
 // const firestore = firebase.firestore();
 
 interface CredentialProps {
@@ -36,22 +36,28 @@ interface CredentialProps {
   pass: string;
 }
 interface InfoProps {
+  credential: {
+    email: string,
+    password: string,
+  }
   na: string;
   addr: string;
-  lic: string;
+  lic: boolean;
 }
 
 function CreateAcc({ em, pass }: CredentialProps) {
   const email = em;
   const password = pass;
 
-  console.log(email, password);
+  // console.log(email, password);
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
       console.log("SignUp successful");
       console.log(user);
       alert("Bạn đã tạo tài khoản thành công, hệ thống sẽ tự đăng nhập");
+      location.reload();
+      // location.replace(location.href);
     })
     .catch((error) => {
       // const errorCode = error.code;
@@ -71,6 +77,8 @@ function Login({ em, pass }: CredentialProps) {
       console.log("SignIn");
       console.log(user);
       alert("Bạn đã đăng nhập thành công");
+      location.reload();
+      // location.replace(location.href);
     })
     .catch((error) => {
       // const errorCode = error.code;
@@ -131,29 +139,21 @@ function Status() {
   }
 }
 
-function StoreSignUpData({ na, addr, lic }: InfoProps) {
-  // db.collection("cities")
-  //   .doc("LA")
-  //   .set({
-  //     name: "Los Angeles",
-  //     state: "CA",
-  //     country: "USA",
-  //   })
-  //   .then(() => {
-  //     console.log("Document successfully written!");
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error writing document: ", error);
-  //   });
-  // const createThinng = document.getElementById("createThing");
-  // const thingsList = document.getElementById("thingsList");
-
-  // let thingsRef;
-  // let unsubscribe;
-  console.log(na, addr, lic);
-
-  // thingsRef = db.collection("Data");
-  // thingsRef.add({});
+function StoreSignUpData({ credential, na, addr, lic }: InfoProps) {
+  console.log(credential.email, credential.password, na, addr, lic);
+  CreateAcc({ em: credential.email, pass: credential.password });
+  let thingsRef = db.collection("UserData");
+  thingsRef.doc(credential.email).set({
+    password: credential.password,
+    name: na,
+    address: addr,
+    lic: lic,
+  }).then(() => {
+    console.log("Document successfully written!");
+  })
+  .catch((error) => {
+    console.error("Error writing document: ", error);
+  });
 }
 
 const UserFunc = {

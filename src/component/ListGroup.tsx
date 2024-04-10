@@ -1,6 +1,6 @@
 // import Form from "react-bootstrap/Form";
 // import { useState } from "react";
-import UserFunc from "../User";
+import Auth from "../Auth";
 
 interface Props {
   name: string;
@@ -12,10 +12,11 @@ function ListGroup({ name }: Props) {
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
     const password = form.elements.namedItem("pass") as HTMLInputElement;
-    UserFunc.Login({ em: email.value, pass: password.value });
+    Auth.Login({ em: email.value, pass: password.value });
   };
 
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log("abc");
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
@@ -23,12 +24,16 @@ function ListGroup({ name }: Props) {
     const name = form.elements.namedItem("name") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
-    UserFunc.StoreSignUpData({
+    Auth.StoreSignUpData({
+      credential: {
+        email: email.value,
+        password: password.value,
+      },
       na: name.value,
       addr: address.value,
-      lic: license.value,
+      lic: license.checked,
     });
-    UserFunc.CreateAcc({ em: email.value, pass: password.value });
+    // Auth.CreateAcc({ em: email.value, pass: password.value });
   };
 
   return (
@@ -64,7 +69,7 @@ function ListGroup({ name }: Props) {
             </a>
           </ul>
         </div>
-        {UserFunc.Status()}
+        {Auth.Status()}
 
         {/* Modal */}
         <div
@@ -103,8 +108,9 @@ function ListGroup({ name }: Props) {
                   </div>
                   {/* Password */}
                   <div className="mb-1">
-                    <label className="mb-2">Mật Khẩu:</label>
+                    <label htmlFor="passInput" className="mb-2">Mật Khẩu:</label>
                     <input
+                      id="passInput"
                       name="pass"
                       type="password"
                       className="form-control"
@@ -117,7 +123,7 @@ function ListGroup({ name }: Props) {
                     type="submit"
                     name="login"
                     className="btn btn-primary"
-                    data-bs-dismiss="modal"
+                    // data-bs-dismiss="modal"
                   >
                     Đăng Nhập
                   </button>
@@ -184,7 +190,7 @@ function ListGroup({ name }: Props) {
                       required
                     ></input>
                     <div className="invalid-feedback">
-                      Vui lòng nhập mật khẩu.
+                      Vui lòng nhập mật khẩu ít nhất 6 ký tự.
                     </div>
                   </div>
                   {/* Tên */}
@@ -228,12 +234,13 @@ function ListGroup({ name }: Props) {
                       type="checkbox"
                       name="license"
                       className="form-check-input"
-                      id="validationFormCheck1"
+                      id="validationLicenseCheck"
+                      value=""
                       required
                     ></input>
                     <label
                       className="form-check-label"
-                      htmlFor="validationFormCheck1"
+                      htmlFor="validationLicenseCheck"
                     >
                       GPLX
                     </label>
@@ -248,7 +255,7 @@ function ListGroup({ name }: Props) {
                     type="submit"
                     name="signup"
                     className="btn btn-success"
-                    data-bs-dismiss="modal"
+                    // data-bs-dismiss="modal"
                   >
                     Đăng Ký
                   </button>
