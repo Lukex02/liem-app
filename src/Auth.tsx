@@ -10,6 +10,7 @@ import {
   signOut,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
+// import { documentId } from "firebase/firestore";
 // import {
 //   getFirestore,
 //   doc,
@@ -28,8 +29,7 @@ firebase.initializeApp({
 });
 
 const auth = getAuth();
-// const db = firebase.firestore();
-// const firestore = firebase.firestore();
+const db = firebase.firestore();
 
 interface CredentialProps {
   em: string;
@@ -45,7 +45,7 @@ function CreateAcc({ em, pass }: CredentialProps) {
   const email = em;
   const password = pass;
 
-  console.log(email, password);
+  // console.log(email, password);
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
@@ -152,7 +152,8 @@ function StoreSignUpData({ na, addr, lic }: InfoProps) {
   // let unsubscribe;
   console.log(na, addr, lic);
 
-  // thingsRef = db.collection("Data");
+  let ref = db.collection("Data");
+  console.log(ref);
   // thingsRef.add({});
 }
 

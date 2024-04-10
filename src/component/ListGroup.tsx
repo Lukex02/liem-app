@@ -1,6 +1,6 @@
 // import Form from "react-bootstrap/Form";
 // import { useState } from "react";
-import UserFunc from "../User";
+import Auth from "../Auth";
 
 interface Props {
   name: string;
@@ -12,7 +12,7 @@ function ListGroup({ name }: Props) {
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
     const password = form.elements.namedItem("pass") as HTMLInputElement;
-    UserFunc.Login({ em: email.value, pass: password.value });
+    Auth.Login({ em: email.value, pass: password.value });
   };
 
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
@@ -23,12 +23,12 @@ function ListGroup({ name }: Props) {
     const name = form.elements.namedItem("name") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
-    UserFunc.StoreSignUpData({
+    Auth.StoreSignUpData({
       na: name.value,
       addr: address.value,
       lic: license.value,
     });
-    UserFunc.CreateAcc({ em: email.value, pass: password.value });
+    Auth.CreateAcc({ em: email.value, pass: password.value });
   };
 
   return (
@@ -64,7 +64,7 @@ function ListGroup({ name }: Props) {
             </a>
           </ul>
         </div>
-        {UserFunc.Status()}
+        {Auth.Status()}
 
         {/* Modal */}
         <div
