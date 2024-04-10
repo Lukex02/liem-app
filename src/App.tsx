@@ -3,9 +3,11 @@ import ListGroup from "./component/ListGroup";
 
 function App() {
   return (
-    <div>
-      <ListGroup name={"Trang Chủ"} />
-    </div>
+    <>
+      <div>
+        <ListGroup name={"Trang Chủ"} />
+      </div>
+    </>
   );
 }
 

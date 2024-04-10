@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
 } from "firebase/auth";
 // import { documentId } from "firebase/firestore";
 // import {
@@ -46,9 +47,9 @@ interface InfoProps {
   lic: boolean;
 }
 
-function CreateAcc({ em, pass }: CredentialProps) {
-  const email = em;
-  const password = pass;
+function CreateAcc({ credential, na, addr, lic }: InfoProps) {
+  const email = credential.email;
+  const password = credential.password;
 
   // console.log(email, password);
   createUserWithEmailAndPassword(auth, email, password)
@@ -57,8 +58,30 @@ function CreateAcc({ em, pass }: CredentialProps) {
       console.log("SignUp successful");
       console.log(user);
       alert("Bạn đã tạo tài khoản thành công, hệ thống sẽ tự đăng nhập");
-      location.reload();
       // location.replace(location.href);
+      let thingsRef = db.collection("UserData");
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // console.log(user);
+          thingsRef
+            .add({
+              email: credential.email,
+              password: credential.password,
+              name: na,
+              address: addr,
+              lic: lic,
+              experience: 0,
+            })
+            .then(() => {
+              console.log("Document successfully written!");
+            })
+            .catch((error) => {
+              console.error("Error writing document: ", error);
+            });
+        }
+      });
+      location.reload();
     })
     .catch((error) => {
       // const errorCode = error.code;
@@ -140,24 +163,10 @@ function Status() {
   }
 }
 
-function StoreSignUpData({ credential, na, addr, lic }: InfoProps) {
-  console.log(credential.email, credential.password, na, addr, lic);
-  CreateAcc({ em: credential.email, pass: credential.password });
-  let thingsRef = db.collection("UserData");
-  thingsRef
-    .doc(credential.email)
-    .set({
-      password: credential.password,
-      name: na,
-      address: addr,
-      lic: lic,
-    })
-    .then(() => {
-      console.log("Document successfully written!");
-    })
-    .catch((error) => {
-      console.error("Error writing document: ", error);
-    });
+function requestAuth() {
+  const [user] = useAuthState(auth);
+
+  return user;
 }
 
 const UserFunc = {
@@ -165,6 +174,6 @@ const UserFunc = {
   SignOut,
   Status,
   CreateAcc,
-  StoreSignUpData,
+  requestAuth,
 };
 export default UserFunc;

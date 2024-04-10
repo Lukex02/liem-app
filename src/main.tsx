@@ -1,13 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
-// import UserFunc from "./User.tsx";
+// import Content from "./Content.tsx";
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
-    {/* <UserFunc.Status /> */}
   </React.StrictMode>
 );
+
+// ReactDOM.createRoot(document.getElementById("content")!).render(
+//   <React.StrictMode>
+//     <Content />
+//   </React.StrictMode>
+// );

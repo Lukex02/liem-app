@@ -24,7 +24,7 @@ function ListGroup({ name }: Props) {
     const name = form.elements.namedItem("name") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
-    Auth.StoreSignUpData({
+    Auth.CreateAcc({
       credential: {
         email: email.value,
         password: password.value,
@@ -33,7 +33,6 @@ function ListGroup({ name }: Props) {
       addr: address.value,
       lic: license.checked,
     });
-    // Auth.CreateAcc({ em: email.value, pass: password.value });
   };
 
   return (
@@ -54,7 +53,7 @@ function ListGroup({ name }: Props) {
           {name}
         </a>
         <div className="navbar-collapse collapse" id="navbarToggler">
-          <ul className="nav-underline nav-pills nav-fill navbar-nav me-auto mb-2 mb-lg-0">
+          <ul className="nav-underline nav-pills nav-fill navbar-nav me-auto mb-2 mb-lg-0 navbar-nav-scroll">
             <a className="nav-item nav-link" href="../../index.html">
               Trang Chủ
             </a>
