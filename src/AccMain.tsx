@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import TripFunc from "./TripFunc.tsx";
-// import "./index.css";
+import AccInfo from "./component/AccInfo";
+import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById("info")!).render(
   <React.StrictMode>
-    <TripFunc />
+    <AccInfo />
   </React.StrictMode>
 );

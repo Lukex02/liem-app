@@ -16,7 +16,7 @@ function ListGroup({ name }: Props) {
   };
 
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("abc");
+    // console.log("abc");
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;

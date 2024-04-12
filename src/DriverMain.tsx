@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import DriverFunc from "./DriverFunc.tsx";
+import DriverFunc from "./component/DriverFunc.tsx";
 // import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 

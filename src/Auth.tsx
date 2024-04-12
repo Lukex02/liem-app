@@ -11,14 +11,14 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
 } from "firebase/auth";
-// import { documentId } from "firebase/firestore";
+// import { getFirestore } from "firebase/firestore";
+// import { getFirestore } from "firebase/firestore";
 // import {
 //   getFirestore,
 //   doc,
 //   setDoc,
 // } from "firebase/firestore";
-
-firebase.initializeApp({
+const firebaseCfg = {
   apiKey: "AIzaSyAHG2MnxuKj2sR9JpFiK0EW13mCO6DgiZM",
   authDomain: "liem-transport.firebaseapp.com",
   databaseURL:
@@ -27,10 +27,12 @@ firebase.initializeApp({
   storageBucket: "liem-transport.appspot.com",
   messagingSenderId: "217198337863",
   appId: "1:217198337863:web:d847f24b6e7cf307dc7662",
-});
+};
+const app = firebase.initializeApp(firebaseCfg);
 
 const auth = getAuth();
-const db = firebase.firestore();
+export const db = firebase.firestore();
+// const db = getFirestore(app);
 // const firestore = firebase.firestore();
 
 interface CredentialProps {
@@ -63,25 +65,28 @@ function CreateAcc({ credential, na, addr, lic }: InfoProps) {
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // console.log(user);
+          console.log(user.uid);
           thingsRef
-            .add({
+            .doc(user.uid)
+            .set({
+              private: {
+                password: credential.password,
+                address: addr,
+              },
               email: credential.email,
-              password: credential.password,
               name: na,
-              address: addr,
               lic: lic,
               experience: 0,
             })
             .then(() => {
               console.log("Document successfully written!");
+              location.reload();
             })
             .catch((error) => {
               console.error("Error writing document: ", error);
             });
         }
       });
-      location.reload();
     })
     .catch((error) => {
       // const errorCode = error.code;
@@ -131,13 +136,41 @@ function Status() {
 
   if (user) {
     return (
-      <button
-        type="button"
-        className="btn btn-outline-primary position-sticky bottom-50 start-50 translate-middle-x"
-        onClick={SignOut}
-      >
-        Đăng Xuất
-      </button>
+      <div className="dropdown position-sticky bottom-0 start-100 mx-4 z-1">
+        <button
+          className="btn btn-daark dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="40"
+            height="40"
+            fill="currentColor"
+            className="bi bi-person-circle"
+            viewBox="0 0 16 16"
+          >
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+            <path
+              fill-rule="evenodd"
+              d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+            />
+          </svg>
+        </button>
+        <ul className="dropdown-menu dropdown-menu-end">
+          <li>
+            <a type="button" className="dropdown-item" href="../account.html">
+              Thông tin cá nhân
+            </a>
+          </li>
+          <li>
+            <button className="dropdown-item" onClick={SignOut}>
+              Đăng Xuất
+            </button>
+          </li>
+        </ul>
+      </div>
     );
   } else {
     return (
@@ -169,11 +202,15 @@ function requestAuth() {
   return user;
 }
 
+function requestCfg() {
+  return app;
+}
 const UserFunc = {
   Login,
   SignOut,
   Status,
   CreateAcc,
   requestAuth,
+  requestCfg,
 };
 export default UserFunc;

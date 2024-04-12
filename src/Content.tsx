@@ -8,11 +8,11 @@ function Content() {
       return (
         <>
           <section className="container-fluid position-absolute text-center my-5">
-            <h1 className="display-1">
+            <h1 className="display-2">
               Chào mừng tới với The Liem Transport
               <img
                 src="../pics/home.jpg"
-                className="img-fluid rounded mx-auto d-block m-4"
+                className="img-fluid rounded-5 mx-auto d-block m-4"
                 alt="..."
               ></img>
               <div className="fs-3 fw-light fst-italic">
@@ -30,7 +30,7 @@ function Content() {
               Chào mừng tới với The Liem Transport
               <img
                 src="../pics/home.jpg"
-                className="img-fluid rounded mx-auto d-block m-4"
+                className="img-fluid rounded-5 mx-auto d-block m-4"
                 alt="..."
               ></img>
               <div className="fs-3 fw-light fst-italic">

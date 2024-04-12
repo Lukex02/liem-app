@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import VehicleFunc from "./VehicleFunc.tsx";
+import VehicleFunc from "./component/VehicleFunc.tsx";
 // import "./index.css";
 import "bootstrap/dist/css/bootstrap.css";
 
