@@ -35,6 +35,14 @@ function DriverFunc() {
                 <div className="card-body">
                   <h5 className="card-title text-uppercase">{item.name}</h5>
                   <p className="card-text">Email: {item.email}</p>
+                  <p className="card-text">Số điện thoại: {item.phone}</p>
+                  <p className="card-text">GPLX hiện có: {item.license}</p>
+                  <p className="card-text">
+                    Kinh nghiệm: {item.experience} (giờ)
+                  </p>
+                  {/* <a type="button" className="btn btn-primary">
+                    Liên hệ (in dev)
+                  </a> */}
                 </div>
               </div>
             ))}

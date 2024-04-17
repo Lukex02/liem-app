@@ -11,6 +11,8 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
 } from "firebase/auth";
+import { arrayUnion, updateDoc } from "firebase/firestore";
+// import { useEffect, useState } from "react";
 // import { getFirestore } from "firebase/firestore";
 // import { getFirestore } from "firebase/firestore";
 // import {
@@ -28,7 +30,7 @@ const firebaseCfg = {
   messagingSenderId: "217198337863",
   appId: "1:217198337863:web:d847f24b6e7cf307dc7662",
 };
-const app = firebase.initializeApp(firebaseCfg);
+export const app = firebase.initializeApp(firebaseCfg);
 
 const auth = getAuth();
 export const db = firebase.firestore();
@@ -40,26 +42,40 @@ interface CredentialProps {
   pass: string;
 }
 interface InfoProps {
-  credential: {
-    email: string;
+  email: string;
+  experience: number;
+  license: string;
+  name: string;
+  phone: string;
+  private: {
     password: string;
+    addr: string;
   };
-  na: string;
-  addr: string;
-  lic: boolean;
 }
-
-function CreateAcc({ credential, na, addr, lic }: InfoProps) {
-  const email = credential.email;
-  const password = credential.password;
+interface VehicleProps {
+  type: string;
+  dimension: {
+    height: number;
+    length: number;
+    width: number;
+  };
+  fuel: string;
+  maintenanceHistory: [];
+  model: string;
+  odometer: number;
+  status: "active";
+  weight: number;
+  yearMade: number;
+}
+function CreateAcc(info: InfoProps) {
+  const email = info.email;
+  const password = info.private.password;
 
   // console.log(email, password);
   createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
-      console.log("SignUp successful");
       console.log(user);
-      alert("Bạn đã tạo tài khoản thành công, hệ thống sẽ tự đăng nhập");
       // location.replace(location.href);
       let thingsRef = db.collection("UserData");
 
@@ -68,17 +84,12 @@ function CreateAcc({ credential, na, addr, lic }: InfoProps) {
           console.log(user.uid);
           thingsRef
             .doc(user.uid)
-            .set({
-              private: {
-                password: credential.password,
-                address: addr,
-              },
-              email: credential.email,
-              name: na,
-              lic: lic,
-              experience: 0,
-            })
+            .set(info)
             .then(() => {
+              console.log("SignUp successful");
+              alert(
+                "Bạn đã tạo tài khoản thành công, hệ thống sẽ tự đăng nhập"
+              );
               console.log("Document successfully written!");
               location.reload();
             })
@@ -165,9 +176,14 @@ function Status() {
             </a>
           </li>
           <li>
-            <button className="dropdown-item" onClick={SignOut}>
+            <a
+              type="button"
+              className="dropdown-item"
+              href="../index.html"
+              onClick={SignOut}
+            >
               Đăng Xuất
-            </button>
+            </a>
           </li>
         </ul>
       </div>
@@ -202,8 +218,24 @@ function requestAuth() {
   return user;
 }
 
-function requestCfg() {
-  return app;
+function uploadVehicle(vehicle: VehicleProps) {
+  // console.log(vehicle.name);
+  const dataRef = db.collection("VehicleData").doc(vehicle.type);
+  updateDoc(dataRef, { available: arrayUnion(vehicle) }).catch((err) => {
+    console.log(err);
+  });
+  console.log("Update vehicle successful");
+  alert("Bạn đã thêm phương tiện thành công!");
+  location.reload();
+}
+function updateUser(info: InfoProps, uid: any) {
+  const dataRef = db.collection("UserData").doc(uid);
+  updateDoc(dataRef, info).catch((err) => {
+    console.log(err);
+  });
+  console.log("Update user info successful");
+  alert("Bạn đã cập nhật thông tin thành công!");
+  // location.reload();
 }
 const UserFunc = {
   Login,
@@ -211,6 +243,7 @@ const UserFunc = {
   Status,
   CreateAcc,
   requestAuth,
-  requestCfg,
+  uploadVehicle,
+  updateUser,
 };
 export default UserFunc;

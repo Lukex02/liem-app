@@ -7,6 +7,8 @@ interface Props {
 }
 
 function ListGroup({ name }: Props) {
+  // const [radioLic, setLic] = useState("");
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -14,7 +16,13 @@ function ListGroup({ name }: Props) {
     const password = form.elements.namedItem("pass") as HTMLInputElement;
     Auth.Login({ em: email.value, pass: password.value });
   };
-
+  // const onOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   e.preventDefault();
+  //   const radio = e.currentTarget;
+  //   // const license = radio.elements.namedItem("license") as HTMLInputElement;
+  //   setLic(radio.value);
+  //   console.log(radioLic);
+  // };
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
     // console.log("abc");
     e.preventDefault();
@@ -22,16 +30,19 @@ function ListGroup({ name }: Props) {
     const email = form.elements.namedItem("email") as HTMLInputElement;
     const password = form.elements.namedItem("pass") as HTMLInputElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
+    const phone = form.elements.namedItem("phone") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
     Auth.CreateAcc({
-      credential: {
-        email: email.value,
+      email: email.value,
+      experience: 0,
+      license: license.value,
+      name: name.value,
+      phone: phone.value,
+      private: {
         password: password.value,
+        addr: address.value,
       },
-      na: name.value,
-      addr: address.value,
-      lic: license.checked,
     });
   };
 
@@ -209,6 +220,26 @@ function ListGroup({ name }: Props) {
                     ></input>
                     <div className="invalid-feedback">Vui lòng nhập Tên.</div>
                   </div>
+                  {/* Số điện thoại */}
+                  <div className="mb-3">
+                    <label htmlFor="validationPhonearea" className="form-label">
+                      Số điện thoại
+                    </label>
+                    <input
+                      type="text"
+                      name="phone"
+                      maxLength={10}
+                      minLength={10}
+                      className="form-control"
+                      id="validationPhonearea"
+                      placeholder="0123456789"
+                      pattern="[0-9]*"
+                      required
+                    ></input>
+                    <div className="invalid-feedback">
+                      Vui lòng nhập số điện thoại (10 chữ số).
+                    </div>
+                  </div>
                   {/* Địa Chỉ */}
                   <div className="mb-3">
                     <label
@@ -230,25 +261,78 @@ function ListGroup({ name }: Props) {
                     </div>
                   </div>
                   {/* GPLX */}
+                  <p className="text">GPLX</p>
                   <div className="form-check mb-3">
                     <input
-                      type="checkbox"
+                      type="radio"
                       name="license"
                       className="form-check-input"
-                      id="validationLicenseCheck"
-                      value=""
+                      id="validationLicenseCheck_C"
+                      value="C"
+                      // onChange={onOptionChange}
                       required
                     ></input>
                     <label
                       className="form-check-label"
-                      htmlFor="validationLicenseCheck"
+                      htmlFor="validationLicenseCheck_C"
                     >
-                      GPLX
+                      Hạng C
                     </label>
-                    <div className="invalid-feedback">Xác nhận bạn có GPLX</div>
-                    <div className="valid-feedback">
-                      Bạn chịu mọi trách nhiệm về thông tin GPLX của bạn
-                    </div>
+                  </div>
+                  <div className="form-check mb-3">
+                    <input
+                      type="radio"
+                      name="license"
+                      className="form-check-input"
+                      id="validationLicenseCheck_D"
+                      value="D"
+                      // onChange={onOptionChange}
+                      required
+                    ></input>
+                    <label
+                      className="form-check-label"
+                      htmlFor="validationLicenseCheck_D"
+                    >
+                      Hạng D
+                    </label>
+                  </div>
+                  <div className="form-check mb-3">
+                    <input
+                      type="radio"
+                      name="license"
+                      className="form-check-input"
+                      id="validationLicenseCheck_E"
+                      value="E"
+                      // onChange={onOptionChange}
+                      required
+                    ></input>
+                    <label
+                      className="form-check-label"
+                      htmlFor="validationLicenseCheck_E"
+                    >
+                      Hạng E
+                    </label>
+                  </div>
+                  <div className="form-check mb-3">
+                    <input
+                      type="radio"
+                      name="license"
+                      className="form-check-input"
+                      id="validationLicenseCheck_F"
+                      value="F"
+                      // onChange={onOptionChange}
+                      required
+                    ></input>
+                    <label
+                      className="form-check-label"
+                      htmlFor="validationLicenseCheck_F"
+                    >
+                      Hạng F
+                    </label>
+                    <div className="invalid-feedback">Xác nhận GPLX</div>
+                    {/* <div className="valid-feedback">
+                        Bạn đảm bảo mọi trách nhiệm về thông tin GPLX của bạn
+                      </div> */}
                   </div>
                 </div>
                 <div className="modal-footer">

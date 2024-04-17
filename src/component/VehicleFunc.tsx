@@ -19,7 +19,7 @@ function VehicleFunc() {
         ...doc.data(),
       }));
       setVehicleData(datas);
-      console.log(datas);
+      // console.log(datas);
       setLoading(true);
     };
     fetchUser();
@@ -34,18 +34,12 @@ function VehicleFunc() {
               <li className="list-group list-group-flush m-4 col">
                 <div className="list-group-item">
                   <h5 className="text-uppercase">{type.name}</h5>
-                  {type.available &&
-                    type.available.map((item: any) => {
-                      return (
-                        <div className="row row-cols-auto mx-auto">
-                          <div
-                            className="card m-4 col"
-                            style={{ width: "400px" }}
-                          >
+                  <div className="row row-cols-auto grid gap-3">
+                    {type.available &&
+                      type.available.map((item: any) => {
+                        return (
+                          <div className="card col" style={{ width: "400px" }}>
                             <div className="card-body">
-                              <h5 className="card-title">
-                                <p className="card-text">Tên: {item.name}</p>
-                              </h5>
                               <p className="card-text">Mã hiệu: {item.model}</p>
                               <p className="card-text">
                                 Trạng thái: {item.status}
@@ -53,13 +47,16 @@ function VehicleFunc() {
                               <p className="card-text">
                                 Năm sản xuất: {item.yearMade}
                               </p>
-                              <p className="card-text">ODO: {item.odometer}</p>
                               <p className="card-text">
-                                Trọng tải: {item.weight}
+                                ODO: {item.odometer} (km)
+                              </p>
+                              <p className="card-text">
+                                Trọng tải: {item.weight} (kg)
                               </p>
                               <p className="card-text">
                                 Kích thước (DxRxC): {item.dimension.length} x{" "}
-                                {item.dimension.width} x {item.dimension.height}
+                                {item.dimension.width} x {item.dimension.height}{" "}
+                                (mm)
                               </p>
                               <p className="card-text">
                                 Lịch sử bảo dưỡng:{" "}
@@ -67,9 +64,9 @@ function VehicleFunc() {
                               </p>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                  </div>
                 </div>
               </li>
             ))}
