@@ -11,7 +11,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
 } from "firebase/auth";
-import { arrayUnion, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, updateDoc } from "firebase/firestore";
 // import { useEffect, useState } from "react";
 // import { getFirestore } from "firebase/firestore";
 // import { getFirestore } from "firebase/firestore";
@@ -49,10 +49,10 @@ interface InfoProps {
   phone: string;
   private: {
     password: string;
-    addr: string;
+    address: string;
   };
 }
-interface VehicleProps {
+export interface VehicleProps {
   type: string;
   dimension: {
     height: number;
@@ -221,21 +221,59 @@ function requestAuth() {
 function uploadVehicle(vehicle: VehicleProps) {
   // console.log(vehicle.name);
   const dataRef = db.collection("VehicleData").doc(vehicle.type);
-  updateDoc(dataRef, { available: arrayUnion(vehicle) }).catch((err) => {
-    console.log(err);
-  });
-  console.log("Update vehicle successful");
-  alert("Bạn đã thêm phương tiện thành công!");
-  location.reload();
+  updateDoc(dataRef, { available: arrayUnion(vehicle) })
+    .then(() => {
+      console.log("Update vehicle successful");
+      alert("Bạn đã thêm phương tiện thành công!");
+      location.reload();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function updateVehicle(vehicle: VehicleProps, oldVehicle: any) {
+  console.log(vehicle);
+  deleteVehicle(oldVehicle);
+  const dataRef = db.collection("VehicleData").doc(vehicle.type);
+  updateDoc(dataRef, { available: arrayUnion(vehicle) })
+    .then(() => {
+      console.log("Update vehicle successful");
+      alert("Bạn đã cập nhật phương tiện thành công!");
+    })
+    .catch((err) => {
+      if (err.code === "permission-denied")
+        alert("Bạn cần đăng nhập để sử dụng tính năng này");
+      console.log(err);
+    });
+}
+function deleteVehicle(vehicle: VehicleProps) {
+  // console.log("OLD");
+  console.log(vehicle);
+  const dataRef = db.collection("VehicleData").doc(vehicle.type);
+  updateDoc(dataRef, { available: arrayRemove(vehicle) })
+    .then(() => {
+      console.log("Remove vehicle successful");
+      location.reload();
+    })
+    .catch((err) => {
+      // Not yet optimal, get double alert if update
+      if (err.code === "permission-denied")
+        alert("Bạn cần đăng nhập để sử dụng tính năng này");
+      console.log(err);
+    });
 }
 function updateUser(info: InfoProps, uid: any) {
   const dataRef = db.collection("UserData").doc(uid);
-  updateDoc(dataRef, info).catch((err) => {
-    console.log(err);
-  });
-  console.log("Update user info successful");
-  alert("Bạn đã cập nhật thông tin thành công!");
-  // location.reload();
+  updateDoc(dataRef, info)
+    .then(() => {
+      console.log("Update user info successful");
+      alert("Bạn đã cập nhật thông tin thành công!");
+      // location.reload();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 const UserFunc = {
   Login,
@@ -245,5 +283,7 @@ const UserFunc = {
   requestAuth,
   uploadVehicle,
   updateUser,
+  updateVehicle,
+  deleteVehicle,
 };
 export default UserFunc;

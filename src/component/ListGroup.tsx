@@ -41,7 +41,7 @@ function ListGroup({ name }: Props) {
       phone: phone.value,
       private: {
         password: password.value,
-        addr: address.value,
+        address: address.value,
       },
     });
   };

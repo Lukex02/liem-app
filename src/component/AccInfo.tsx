@@ -47,10 +47,6 @@ function AccInfo() {
     const yMade = form.elements.namedItem("yearMade") as HTMLInputElement;
     const o = form.elements.namedItem("odo") as HTMLInputElement;
     const fuel = form.elements.namedItem("fuel") as HTMLInputElement;
-    // let name;
-    // if ((type.value = "Coach")) name = "A";
-    // else if ((type.value = "Container")) name = "B";
-    // else name = "C";
     Auth.uploadVehicle({
       type: type.value,
       dimension: {
@@ -85,7 +81,7 @@ function AccInfo() {
         phone: phone.value,
         private: {
           password: password.value,
-          addr: address.value,
+          address: address.value,
         },
       },
       auth?.uid
@@ -219,7 +215,7 @@ function AccInfo() {
                           className="form-control"
                           id="updateAddressarea"
                           placeholder="Đường XYZ P6 Q9"
-                          defaultValue={userData.private.address}
+                          defaultValue={userData.private.addr}
                           required
                         ></input>
                         <div className="invalid-feedback">
