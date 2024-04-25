@@ -12,15 +12,7 @@ function AccInfo() {
   const dataRef = db.collection("UserData").doc(auth?.uid);
 
   useEffect(() => {
-    // console.log("useEffect has used");
     const fetchUser = async () => {
-      // const querySnapshot = await getDocs(collection(db, "UserData"));
-      // const datas = querySnapshot.docs.map((doc) => ({
-      //   id: doc.id,
-      //   ...doc.data(),
-      // }));
-      // setUserData(datas);
-      // console.log(datas);
       const docSnap = await getDoc(dataRef);
       setLoading(true);
       if (docSnap.exists()) {
@@ -32,7 +24,6 @@ function AccInfo() {
       }
     };
     fetchUser();
-    // console.log("end");
   }, [loading]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,21 +38,25 @@ function AccInfo() {
     const yMade = form.elements.namedItem("yearMade") as HTMLInputElement;
     const o = form.elements.namedItem("odo") as HTMLInputElement;
     const fuel = form.elements.namedItem("fuel") as HTMLInputElement;
-    Auth.uploadVehicle({
-      type: type.value,
-      dimension: {
-        height: +hei.value,
-        length: +len.value,
-        width: +wid.value,
+    const plate = form.elements.namedItem("plate") as HTMLInputElement;
+    Auth.uploadVehicle(
+      {
+        type: type.value,
+        dimension: {
+          height: +hei.value,
+          length: +len.value,
+          width: +wid.value,
+        },
+        fuel: fuel.value,
+        maintenanceHistory: [],
+        model: model.value,
+        odometer: +o.value,
+        status: "active",
+        weight: +wei.value,
+        yearMade: +yMade.value,
       },
-      fuel: fuel.value,
-      maintenanceHistory: [],
-      model: model.value,
-      odometer: +o.value,
-      status: "active",
-      weight: +wei.value,
-      yearMade: +yMade.value,
-    });
+      plate.value
+    );
   };
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,6 +71,7 @@ function AccInfo() {
       {
         email: email.value,
         experience: 0,
+        efficency: 0,
         license: license.value,
         name: name.value,
         phone: phone.value,
@@ -101,6 +97,11 @@ function AccInfo() {
               <p className="card-text">Địa chỉ: {userData.private.address}</p>
               <p className="card-text">Số điện thoại: {userData.phone}</p>
               <p className="card-text">GPLX hạng: {userData.license}</p>
+              {userData.admin && (
+                <p className="card-text text-warning fs-4">
+                  Tài khoản có quyền ADMIN
+                </p>
+              )}
             </div>
             {/* Update Info Button */}
             <div>
@@ -320,7 +321,7 @@ function AccInfo() {
                 {userData.experience} giờ)
               </p>
               <div
-                className="progress"
+                className="progress m-3"
                 role="progressbar"
                 aria-label="Experience"
               >
@@ -329,19 +330,24 @@ function AccInfo() {
                   style={{ width: `${userData.experience % 100}%` }}
                 ></div>
               </div>
+              <p className="card-text">
+                Hiệu suất của tài xế: {userData.efficency * 100}%
+              </p>
             </div>
           </div>
           {/* Add Vehicle button */}
-          <div className="position-absolute start-50 translate-middle-x">
-            <button
-              type="button"
-              className="btn btn-success"
-              data-bs-toggle="modal"
-              data-bs-target="#addVehicle"
-            >
-              Thêm Phương Tiện
-            </button>
-          </div>
+          {userData.admin && (
+            <div className="position-absolute start-50 translate-middle-x">
+              <button
+                type="button"
+                className="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#addVehicle"
+              >
+                Thêm Phương Tiện
+              </button>
+            </div>
+          )}
           {/* Add Vehicle Modal */}
           <div className="modal fade" id="addVehicle">
             <div className="modal-dialog">
@@ -458,6 +464,21 @@ function AccInfo() {
                       <option value="gas">Xăng</option>
                       <option value="e85">E85</option>
                     </select>
+                  </div>
+                  {/* Biển Số Xe */}
+                  <div className="m-3">
+                    <label htmlFor="plate" className="form-label">
+                      Biển Số Xe (Định dạng: 00F12345)
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="plate"
+                      name="plate"
+                      maxLength={8}
+                      pattern="\d{2}[A-Z]\d{5}"
+                      required
+                    ></input>
                   </div>
                   <div className="modal-footer">
                     <button

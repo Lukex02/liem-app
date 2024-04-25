@@ -1,8 +1,7 @@
-// import "../style/accCard.css";
 import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
-import { getDocs } from "firebase/firestore";
+import { collection, getDoc, getDocs } from "firebase/firestore";
 import Auth, { db, VehicleProps } from "../Auth";
 
 function VehicleFunc() {
@@ -12,21 +11,65 @@ function VehicleFunc() {
   const [oldVehicle, setOldVehicle] = useState<VehicleProps | any>();
   const [updModalOpen, setUpdModalOpen] = useState(false);
   const [deleteVehicle, setDeleteVehicle] = useState(false);
-  const dataRef = db.collection("VehicleData");
+  const dataRef = collection(db, "VehicleData");
+  const auth = Auth.requestAuth();
+  const [userData, setUserData] = useState<any | null>(null);
 
   useEffect(() => {
-    // console.log("useEffect has used");
     const fetchVehicle = async () => {
+      type obj = {
+        id: String;
+        name: String;
+        available: {}[];
+      };
+
       const querySnapshot = await getDocs(dataRef);
-      const datas = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setVehicleData(datas);
-      // console.log(datas);
+      const Datas = await Promise.all(
+        querySnapshot.docs.map(async (doc) => {
+          const availableRef = collection(
+            db,
+            "VehicleData",
+            doc.id,
+            "available"
+          );
+          const availableQuery = await getDocs(availableRef);
+          const subData = await Promise.all(
+            availableQuery.docs.map((subDoc) => {
+              return {
+                id: subDoc.id,
+                ...subDoc.data(),
+              };
+            })
+          );
+          const vehicleObj: obj = {
+            id: doc.id,
+            name: doc.data().name,
+            available: subData,
+          };
+          return vehicleObj;
+        })
+      );
+      // console.log(Datas);
+      setVehicleData(Datas);
       setLoading(true);
     };
     fetchVehicle();
+  }, [loading]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const UserRef = db.collection("UserData").doc(auth?.uid);
+      const docSnap = await getDoc(UserRef);
+      setLoading(true);
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+        // console.log(docSnap.data());
+      } else {
+        // console.log(docSnap);
+        console.log("No Document");
+      }
+    };
+    fetchUser();
   }, [loading]);
 
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,6 +84,8 @@ function VehicleFunc() {
     const yMade = form.elements.namedItem("updYearMade") as HTMLInputElement;
     const o = form.elements.namedItem("updOdo") as HTMLInputElement;
     const fuel = form.elements.namedItem("updFuel") as HTMLInputElement;
+    const plate = form.elements.namedItem("plate") as HTMLInputElement;
+    // console.log(plate.value);
     Auth.updateVehicle(
       {
         type: type.value,
@@ -57,13 +102,15 @@ function VehicleFunc() {
         weight: +wei.value,
         yearMade: +yMade.value,
       },
-      oldVehicle
+      // oldVehicle,
+      plate.value
     );
   };
+
   function displayUpdVehMod(content: any) {
     const item = content.item;
     const type = content.type;
-    // console.log(item);
+    // console.log(item.id);
     // console.log(type);
     return (
       <div>
@@ -199,11 +246,25 @@ function VehicleFunc() {
               <option value="e85">E85</option>
             </select>
           </div>
+          {/* Biển Số Xe */}
+          <div className="m-3">
+            <label htmlFor="plate" className="form-label">
+              Biển số xe
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="plate"
+              name="plate"
+              defaultValue={item.id}
+              disabled
+            ></input>
+          </div>
           {/* Footer */}
           <div className="modal-footer">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-outline-danger"
               data-bs-dismiss="modal"
               onClick={() => {
                 setUpdModalOpen(false);
@@ -211,7 +272,7 @@ function VehicleFunc() {
             >
               Đóng
             </button>
-            <button type="submit" name="add" className="btn btn-primary">
+            <button type="submit" name="add" className="btn btn-success">
               Lưu vào hệ thống
             </button>
           </div>
@@ -219,30 +280,50 @@ function VehicleFunc() {
       </div>
     );
   }
+
   useEffect(() => {
     function handleDelete() {
       setDeleteVehicle(false);
       if (oldVehicle != null) Auth.deleteVehicle(oldVehicle);
     }
     handleDelete();
-  }, [deleteVehicle, deleteVehicle]);
+  }, [deleteVehicle]);
   return (
     <>
       {vehicleData ? (
         <div>
           <ListGroup name={"Đội Xe"} />
           <div className="mx-auto">
-            {vehicleData.map((type: any) => (
-              <li className="list-group list-group-flush m-4 col">
+            {vehicleData.map((type: any, typeIdx: any) => (
+              <li
+                className="list-group list-group-flush m-4 col"
+                key={"vehicleList_" + typeIdx}
+              >
                 <div className="list-group-item">
                   <h5 className="text-uppercase">{type.name}</h5>
-                  <div className="row row-cols-auto grid gap-3">
+                  <div className="row row-cols-auto grid gap-4">
                     {type.available &&
-                      type.available.map((item: any) => {
+                      type.available.map((item: any, index: any) => {
                         return (
-                          <div className="card col" style={{ width: "400px" }}>
+                          <div
+                            className="card col"
+                            style={{ width: "400px" }}
+                            key={"card_" + index}
+                          >
+                            {item.status == "active" && (
+                              <span className="position-absolute top-0 start-100 translate-middle p-3 bg-success border border-light rounded-circle"></span>
+                            )}
+                            {item.status == "busy" && (
+                              <span className="position-absolute top-0 start-100 translate-middle p-3 bg-danger border border-light rounded-circle"></span>
+                            )}
+                            {item.status == "maintenance" && (
+                              <span className="position-absolute top-0 start-100 translate-middle p-3 bg-warning border border-light rounded-circle"></span>
+                            )}
+                            <h4 className="card-title mt-3 ms-3">
+                              {item.model}
+                            </h4>
                             <div className="card-body">
-                              <p className="card-text">Mã hiệu: {item.model}</p>
+                              <p className="card-text"></p>
                               <p className="card-text">
                                 Trạng thái: {item.status}
                               </p>
@@ -263,21 +344,25 @@ function VehicleFunc() {
                                 {item.dimension.width} x {item.dimension.height}{" "}
                                 (mm)
                               </p>
+                              <p className="card-text">Biển số xe: {item.id}</p>
                               <p className="card-text">
                                 Lịch sử bảo dưỡng:{" "}
                                 {item.maintenanceHistory.join(", ")}
                               </p>
                             </div>
-                            {true && (
+                            {userData && userData.admin && (
                               <div className="card-footer">
                                 <button
                                   type="button"
-                                  className="btn btn-outline-success mx-5"
+                                  className="btn btn-outline-success mx-2"
                                   data-bs-toggle="modal"
                                   data-bs-target="#updateVehicle"
                                   onClick={() => {
-                                    // console.log(item, type.id);
-                                    setModalData({ item: item, type: type.id });
+                                    // console.log(item);
+                                    setModalData({
+                                      item: item,
+                                      type: type.id,
+                                    });
                                     setOldVehicle({
                                       type: type.id,
                                       dimension: item.dimension,
@@ -297,19 +382,33 @@ function VehicleFunc() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-danger mx-5"
+                                  className="btn btn-outline-warning mx-2"
+                                  onClick={() => {
+                                    // setOldVehicle({
+                                    //   type: type.id,
+                                    //   dimension: item.dimension,
+                                    //   fuel: item.fuel,
+                                    //   maintenanceHistory:
+                                    //     item.maintenanceHistory,
+                                    //   model: item.model,
+                                    //   odometer: item.odometer,
+                                    //   status: item.status,
+                                    //   weight: item.weight,
+                                    //   yearMade: item.yearMade,
+                                    // });
+                                    // setDeleteVehicle(true);
+                                  }}
+                                >
+                                  Bảo dưỡng (dev)
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-danger m-2"
+                                  key={"remove_" + index}
                                   onClick={() => {
                                     setOldVehicle({
                                       type: type.id,
-                                      dimension: item.dimension,
-                                      fuel: item.fuel,
-                                      maintenanceHistory:
-                                        item.maintenanceHistory,
-                                      model: item.model,
-                                      odometer: item.odometer,
-                                      status: item.status,
-                                      weight: item.weight,
-                                      yearMade: item.yearMade,
+                                      plate: item.id,
                                     });
                                     setDeleteVehicle(true);
                                   }}
@@ -326,7 +425,6 @@ function VehicleFunc() {
               </li>
             ))}
             {/* Update Vehicle Modal */}
-
             <div
               className="modal fade"
               id="updateVehicle"

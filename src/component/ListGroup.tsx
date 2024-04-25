@@ -34,8 +34,10 @@ function ListGroup({ name }: Props) {
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
     Auth.CreateAcc({
+      admin: false,
       email: email.value,
       experience: 0,
+      efficency: 1,
       license: license.value,
       name: name.value,
       phone: phone.value,
@@ -69,7 +71,7 @@ function ListGroup({ name }: Props) {
               Trang Chủ
             </a>
             <a className="nav-item nav-link" href="../../Trip/trip.html">
-              Lịch Trình
+              Chuyến Đi
             </a>
             <a className="nav-item nav-link" href="../../Vehicle/vehicle.html">
               Đội Xe

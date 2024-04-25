@@ -11,15 +11,28 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
 } from "firebase/auth";
-import { arrayRemove, arrayUnion, updateDoc } from "firebase/firestore";
-// import { useEffect, useState } from "react";
-// import { getFirestore } from "firebase/firestore";
-// import { getFirestore } from "firebase/firestore";
-// import {
-//   getFirestore,
-//   doc,
-//   setDoc,
-// } from "firebase/firestore";
+import {
+  Timestamp,
+  addDoc,
+  // and,
+  // arrayRemove,
+  // arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  limit,
+  // or,
+  orderBy,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+// import { useState } from "react";
+
 const firebaseCfg = {
   apiKey: "AIzaSyAHG2MnxuKj2sR9JpFiK0EW13mCO6DgiZM",
   authDomain: "liem-transport.firebaseapp.com",
@@ -42,8 +55,10 @@ interface CredentialProps {
   pass: string;
 }
 interface InfoProps {
+  admin?: boolean;
   email: string;
   experience: number;
+  efficency: number;
   license: string;
   name: string;
   phone: string;
@@ -67,6 +82,27 @@ export interface VehicleProps {
   weight: number;
   yearMade: number;
 }
+
+interface TripProps {
+  // start: keyof typeof Location;
+  // end: keyof typeof Location;
+  // start: number;
+  // end: number;
+  start: string;
+  end: string;
+  timeEst?: number;
+  vehicleType: string;
+  // vehicle?: string;
+  // driver?: string;
+  [key: string]: any;
+}
+
+enum Location {
+  HCMC = 1,
+  HN = 30,
+  VT = 3,
+}
+
 function CreateAcc(info: InfoProps) {
   const email = info.email;
   const password = info.private.password;
@@ -218,10 +254,13 @@ function requestAuth() {
   return user;
 }
 
-function uploadVehicle(vehicle: VehicleProps) {
-  // console.log(vehicle.name);
-  const dataRef = db.collection("VehicleData").doc(vehicle.type);
-  updateDoc(dataRef, { available: arrayUnion(vehicle) })
+function uploadVehicle(vehicle: VehicleProps, plate: string) {
+  // console.log(plate);
+  const dataRef = doc(
+    collection(db, "VehicleData/" + vehicle.type + "/available/"),
+    plate
+  );
+  setDoc(dataRef, vehicle)
     .then(() => {
       console.log("Update vehicle successful");
       alert("Bạn đã thêm phương tiện thành công!");
@@ -232,14 +271,17 @@ function uploadVehicle(vehicle: VehicleProps) {
     });
 }
 
-function updateVehicle(vehicle: VehicleProps, oldVehicle: any) {
-  console.log(vehicle);
-  deleteVehicle(oldVehicle);
-  const dataRef = db.collection("VehicleData").doc(vehicle.type);
-  updateDoc(dataRef, { available: arrayUnion(vehicle) })
+// function updateVehicle(vehicle: VehicleProps, oldVehicle: any) {
+function updateVehicle(vehicle: VehicleProps, plate: string) {
+  // console.log(plate);
+  const dataRef = db
+    .collection("VehicleData/" + vehicle.type + "/available/")
+    .doc(plate);
+  updateDoc(dataRef, vehicle)
     .then(() => {
       console.log("Update vehicle successful");
       alert("Bạn đã cập nhật phương tiện thành công!");
+      location.reload();
     })
     .catch((err) => {
       if (err.code === "permission-denied")
@@ -247,17 +289,19 @@ function updateVehicle(vehicle: VehicleProps, oldVehicle: any) {
       console.log(err);
     });
 }
-function deleteVehicle(vehicle: VehicleProps) {
+function deleteVehicle(vehicle: any) {
   // console.log("OLD");
-  console.log(vehicle);
-  const dataRef = db.collection("VehicleData").doc(vehicle.type);
-  updateDoc(dataRef, { available: arrayRemove(vehicle) })
+  // console.log(vehicle);
+  const dataRef = doc(
+    db,
+    "VehicleData/" + vehicle.type + "/available/" + vehicle.plate
+  );
+  deleteDoc(dataRef)
     .then(() => {
       console.log("Remove vehicle successful");
       location.reload();
     })
     .catch((err) => {
-      // Not yet optimal, get double alert if update
       if (err.code === "permission-denied")
         alert("Bạn cần đăng nhập để sử dụng tính năng này");
       console.log(err);
@@ -275,6 +319,193 @@ function updateUser(info: InfoProps, uid: any) {
       console.log(err);
     });
 }
+
+async function createTrip(tripInfo: TripProps) {
+  const vehiclePrice = [0.03, 0.08, 0.12];
+  const dist = Math.abs(
+    Location[tripInfo.start as keyof typeof Location] -
+      Location[tripInfo.end as keyof typeof Location]
+  );
+  const timeEst = dist > 0 ? dist : 0.5;
+  const vehicleRef = collection(
+    db,
+    "VehicleData/",
+    tripInfo.vehicleType,
+    "available"
+  );
+  const userRef = collection(db, "UserData");
+  const tripRef = collection(db, "TripData");
+
+  const userQuery = query(
+    userRef,
+    where("experience", ">=", timeEst * 10),
+    where("status", "==", "active"),
+    where("admin", "==", false),
+    orderBy("experience"),
+    limit(1)
+  );
+
+  const vehicleQuery = query(
+    vehicleRef,
+    where("status", "==", "active"),
+    limit(1)
+  );
+
+  const userQuerySnapshot = await getDocs(userQuery);
+  const driverInfo = await Promise.all(
+    userQuerySnapshot.docs.map((doc) => {
+      return {
+        uid: doc.id,
+        name: doc.data().name,
+      };
+    })
+  );
+  let vehicleCost = 1;
+
+  const vehicleQuerySnapshot = await getDocs(vehicleQuery);
+  const vehicleInfo = await Promise.all(
+    vehicleQuerySnapshot.docs.map((doc) => {
+      // console.log(doc.id, " => ", doc.data());
+      if (doc.data().type == "Coach") {
+        vehicleCost = vehiclePrice[0];
+      }
+      if (doc.data().type == "Truck") {
+        vehicleCost = vehiclePrice[1];
+      }
+      if (doc.data().type == "Container") {
+        vehicleCost = vehiclePrice[2];
+      }
+      // }
+      return {
+        plate: doc.id,
+        model: doc.data().model,
+      };
+    })
+  );
+  if (driverInfo.length > 0 && vehicleInfo.length > 0) {
+    updateDoc(doc(userRef, driverInfo[0].uid), { status: "busy" });
+    updateDoc(doc(vehicleRef, vehicleInfo[0].plate), { status: "busy" });
+
+    tripInfo.cost = timeEst * 1000 * vehicleCost;
+    tripInfo.status = "pending";
+    tripInfo.driver = {
+      uid: driverInfo[0].uid,
+      name: driverInfo[0].name,
+    };
+    tripInfo.vehicle = {
+      plate: vehicleInfo[0].plate,
+      model: vehicleInfo[0].model,
+    };
+    tripInfo.timeEst = timeEst;
+    // console.log(tripInfo.cost);
+    addDoc(tripRef, tripInfo)
+      // addDoc(tripRef, { ...tripInfo, timeStart: Timestamp.now().toDate() })
+      .then(() => {
+        console.log("Create trip successful");
+        alert("Gửi yêu cầu chuyến đi thành công, vui lòng chờ xác nhận");
+        location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Xảy ra lỗi");
+      });
+  } else {
+    console.log(driverInfo);
+    console.log(vehicleInfo);
+    console.log("No driver or vehicle available");
+    alert(
+      "Hiện không tìm được tài xế hoặc phương tiện phù hợp, yêu cầu chuyến đi không thành công."
+    );
+  }
+}
+
+function finishTrip(time: Date, trip: any) {
+  // Exp count in minutes instead hours for research purposes
+  // To convert it to hours divide by 60 one more
+  const exp =
+    Math.floor(((time.getTime() - trip.timeStart) / 1000 / 60) * 100) / 100;
+  // If late then timeEst > exp => degrade H
+  // If early then timeEst < exp => H > 1 => upgrade H
+  const H = Math.floor((trip.timeEst / exp) * 100) / 100;
+  const tripRef = doc(db, "TripData", trip.tripId);
+  const userRef = doc(db, "UserData", trip.userUID);
+  const vehicleRef = doc(
+    db,
+    "VehicleData",
+    trip.vehicleType,
+    "available",
+    trip.vehiclePlate
+  );
+  getDoc(userRef)
+    .then((doc) => {
+      const currEfficiency = doc.data()?.efficiency;
+      const calcEfficiency = Math.floor(((currEfficiency + H) / 2) * 100) / 100;
+      const newEfficiency = calcEfficiency > 1 ? 1 : calcEfficiency;
+      // console.log(newEfficiency);
+      updateDoc(userRef, {
+        status: "active",
+        efficiency: newEfficiency,
+        trip: increment(1),
+        experience: increment(exp),
+      }).then(() => {
+        console.log("Update status of User successful");
+        updateDoc(vehicleRef, { status: "active" }).then(() => {
+          deleteDoc(tripRef);
+          console.log("Update status of Vehicle successful");
+          alert("Xác nhận hoàn thành chuyến đi thành công");
+          location.reload();
+        });
+      });
+    })
+    .catch((err) => {
+      console.log("Get Doc error");
+      console.log(err);
+    });
+}
+function confirmTrip(tripId: any) {
+  const tripRef = doc(db, "TripData", tripId);
+  updateDoc(tripRef, { status: "active", timeStart: Timestamp.now().toDate() })
+    .then(() => {
+      console.log("Trip confirmed");
+      alert("Chuyến đi được xác nhận thành công");
+      location.reload();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+function rejectTrip(trip: any) {
+  const tripRef = doc(db, "TripData", trip.tripId);
+  const userRef = doc(db, "UserData", trip.userUID);
+  const vehicleRef = doc(
+    db,
+    "VehicleData",
+    trip.vehicleType,
+    "available",
+    trip.vehiclePlate
+  );
+  getDoc(userRef).then((doc) => {
+    const currEfficiency = doc.data()?.efficiency;
+    // If reject first then don't affect efficiency
+    // If declined after confirm then assume efficiency = 0, degrade driver efficiency
+    const newEfficiency = trip.rejectFirst
+      ? currEfficiency
+      : Math.floor(((currEfficiency + 0) / 2) * 100) / 100;
+    // console.log(newEfficiency);
+    updateDoc(userRef, { status: "active", efficiency: newEfficiency }).then(
+      () => {
+        console.log("Update status of User successful");
+        updateDoc(vehicleRef, { status: "active" }).then(() => {
+          deleteDoc(tripRef);
+          console.log("Update status of Vehicle successful");
+          alert("Xác nhận hủy bỏ chuyến đi thành công");
+          location.reload();
+        });
+      }
+    );
+  });
+}
+
 const UserFunc = {
   Login,
   SignOut,
@@ -285,5 +516,9 @@ const UserFunc = {
   updateUser,
   updateVehicle,
   deleteVehicle,
+  createTrip,
+  finishTrip,
+  confirmTrip,
+  rejectTrip,
 };
 export default UserFunc;
