@@ -6,13 +6,13 @@ import ListGroup from "./ListGroup";
 function TripFunc() {
   const [tripData, setTripData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
   const [confirmTrip, setConfirmTrip] = useState<any | null>();
   const dataRef = db.collection("TripData");
   const auth = Auth.requestAuth();
   const [userData, setUserData] = useState<any | null>(null);
 
   useEffect(() => {
-    // console.log("useEffect has used");
     const fetchUser = async () => {
       const querySnapshot = await getDocs(dataRef);
       const datas = querySnapshot.docs.map((doc) => ({
@@ -26,22 +26,20 @@ function TripFunc() {
     fetchUser();
   }, [loading]);
   useEffect(() => {
-    // console.log("useEffect has used");
     const fetchUser = async () => {
       const UserRef = db.collection("UserData").doc(auth?.uid);
       const docSnap = await getDoc(UserRef);
       if (docSnap.exists()) {
-        setUserData(docSnap.data());
-        // console.log(docSnap.data());
+        setUserData({ uid: docSnap.id, ...docSnap.data() });
+        // console.log(docSnap.id);
       } else {
         // console.log(docSnap);
         console.log("No Document");
       }
-      setLoading(true);
+      setUserLoading(true);
     };
     fetchUser();
-    // console.log("end");
-  }, [loading]);
+  }, [userLoading]);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -64,17 +62,20 @@ function TripFunc() {
 
   return (
     <>
-      {tripData ? (
+      {tripData && userLoading ? (
         <div>
           <ListGroup name={"Chuyến Đi"} />
           <div className="container-fluid text-center my-5">
-            <button
-              className="btn btn-primary btn-lg"
-              data-bs-toggle="modal"
-              data-bs-target="#createTrip"
-            >
-              Tạo chuyến đi
-            </button>
+            {/* Not showing for driver, only for admin and customer */}
+            {(userData?.admin || !userData) && (
+              <button
+                className="btn btn-primary btn-lg"
+                data-bs-toggle="modal"
+                data-bs-target="#createTrip"
+              >
+                Tạo chuyến đi
+              </button>
+            )}
             {/* Create Trip Modal */}
             <div
               className="modal fade"
@@ -137,8 +138,9 @@ function TripFunc() {
                           <option value="Coach">Xe Du Lịch</option>
                           <option value="Container">Xe Container</option>
                           <option value="Truck">Xe Tải</option>
-                          {/* <option value="SUV">SUV</option>
-                          <option value="Sport">Xe Thể Thao</option> */}
+                          <option value="SUV">Xe SUV</option>
+                          <option value="Sports">Xe Thể Thao</option>
+                          <option value="Sedan">Xe Sedan</option>
                         </select>
                       </div>
                     </div>
@@ -153,6 +155,7 @@ function TripFunc() {
               </div>
             </div>
           </div>
+          {/* </div> */}
           {tripData.length > 0 ? (
             <div>
               <p className="display-5 text-center">Chuyến đi đang thực hiện</p>
@@ -178,7 +181,7 @@ function TripFunc() {
                       Thời gian dự kiến: {item.timeEst} (giờ)
                     </p>
                     <p className="card-text" key={"cost_" + index}>
-                      Chi phí dự kiến: {item.cost * 1000} (VND)
+                      Giá chuyến đi dự kiến: {item.cost * 1000} (VND)
                     </p>
                     <p className="card-text" key={"driver_" + index}>
                       Tài xế phụ trách: {item.driver.name}
@@ -190,16 +193,9 @@ function TripFunc() {
                     <p className="card-text" key={"timeStart_" + index}>
                       Thời gian bắt đầu: {item.timeStart?.toDate().toString()}
                     </p>
-                    {/* <div
-                      className="progress"
-                      role="progressbar"
-                      key={"progress_" + index}
-                    >
-                      <div
-                        className="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                        style={{ width: "75%" }}
-                      ></div>
-                    </div> */}
+                    <p className="card-text" key={"status_" + index}>
+                      Trạng thái: {item.status}
+                    </p>
                   </div>
                   {userData &&
                     ((item.status == "active" && (
@@ -239,39 +235,40 @@ function TripFunc() {
                         </button>
                       </div>
                     )) ||
-                      (item.status == "pending" && (
-                        <div className="card-footer">
-                          <button
-                            className="btn btn-outline-warning m-2"
-                            key={"confirmBut_" + index}
-                            onClick={() => {
-                              Auth.confirmTrip(item.id);
-                            }}
-                          >
-                            Xác nhận chuyến đi
-                          </button>
-                          <button
-                            className="btn btn-outline-danger m-2"
-                            key={"rejectBut_" + index}
-                            onClick={() => {
-                              Auth.rejectTrip({
-                                rejectFirst: true,
-                                tripId: item.id,
-                                userUID: item.driver.uid,
-                                vehicleType: item.vehicleType,
-                                vehiclePlate: item.vehicle.plate,
-                              });
-                            }}
-                          >
-                            Từ chối
-                          </button>
-                        </div>
-                      )))}
+                      (item.status == "pending" &&
+                        (userData.admin || item.driver.uid == userData.uid) && (
+                          <div className="card-footer">
+                            <button
+                              className="btn btn-outline-warning m-2"
+                              key={"confirmBut_" + index}
+                              onClick={() => {
+                                Auth.confirmTrip(item.id);
+                              }}
+                            >
+                              Xác nhận chuyến đi
+                            </button>
+                            <button
+                              className="btn btn-outline-danger m-2"
+                              key={"rejectBut_" + index}
+                              onClick={() => {
+                                Auth.rejectTrip({
+                                  rejectFirst: true,
+                                  tripId: item.id,
+                                  userUID: item.driver.uid,
+                                  vehicleType: item.vehicleType,
+                                  vehiclePlate: item.vehicle.plate,
+                                });
+                              }}
+                            >
+                              Từ chối
+                            </button>
+                          </div>
+                        )))}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="container-fluid mp-5">
+            <div className="container-fluid p-5">
               <p className="display-5 text-center">
                 Hiện tại chưa có chuyến đi
               </p>

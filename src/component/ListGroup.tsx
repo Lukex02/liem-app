@@ -7,8 +7,6 @@ interface Props {
 }
 
 function ListGroup({ name }: Props) {
-  // const [radioLic, setLic] = useState("");
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -16,13 +14,6 @@ function ListGroup({ name }: Props) {
     const password = form.elements.namedItem("pass") as HTMLInputElement;
     Auth.Login({ em: email.value, pass: password.value });
   };
-  // const onOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   e.preventDefault();
-  //   const radio = e.currentTarget;
-  //   // const license = radio.elements.namedItem("license") as HTMLInputElement;
-  //   setLic(radio.value);
-  //   console.log(radioLic);
-  // };
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
     // console.log("abc");
     e.preventDefault();
@@ -37,7 +28,7 @@ function ListGroup({ name }: Props) {
       admin: false,
       email: email.value,
       experience: 0,
-      efficency: 1,
+      efficiency: 1,
       license: license.value,
       name: name.value,
       phone: phone.value,
@@ -45,6 +36,8 @@ function ListGroup({ name }: Props) {
         password: password.value,
         address: address.value,
       },
+      status: "active",
+      trip: 0,
     });
   };
 
@@ -137,7 +130,6 @@ function ListGroup({ name }: Props) {
                     type="submit"
                     name="login"
                     className="btn btn-primary"
-                    // data-bs-dismiss="modal"
                   >
                     Đăng Nhập
                   </button>
@@ -264,6 +256,23 @@ function ListGroup({ name }: Props) {
                   </div>
                   {/* GPLX */}
                   <p className="text">GPLX</p>
+                  <div className="form-check mb-3">
+                    <input
+                      type="radio"
+                      name="license"
+                      className="form-check-input"
+                      id="validationLicenseCheck_B"
+                      value="B"
+                      // onChange={onOptionChange}
+                      required
+                    ></input>
+                    <label
+                      className="form-check-label"
+                      htmlFor="validationLicenseCheck_B"
+                    >
+                      Hạng B
+                    </label>
+                  </div>
                   <div className="form-check mb-3">
                     <input
                       type="radio"

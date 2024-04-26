@@ -41,7 +41,7 @@ function Content() {
           >
             The Liem Transport
             {user ? (
-              <div className="fs-6 fw-light fst-italic text-center mt-2 d-none d-sm-block">
+              <div className="fs-5 fw-light fst-italic text-center mt-2 d-none d-md-block">
                 Chào bạn {user.email}
               </div>
             ) : (
@@ -63,7 +63,7 @@ function Content() {
                   alt="..."
                 ></img>
                 <div
-                  className="carousel-caption text-light d-none d-sm-block position-absolute"
+                  className="carousel-caption text-light d-none d-md-block position-absolute"
                   style={{
                     left: "2rem",
                     bottom: "1rem",
@@ -82,7 +82,7 @@ function Content() {
                   alt="..."
                 ></img>
                 <div
-                  className="carousel-caption text-light d-none d-sm-block position-absolute"
+                  className="carousel-caption text-light d-none d-md-block position-absolute"
                   style={{
                     left: "2rem",
                     bottom: "1rem",
@@ -101,7 +101,7 @@ function Content() {
                   alt="..."
                 ></img>
                 <div
-                  className="carousel-caption text-dark d-none d-sm-block position-absolute"
+                  className="carousel-caption text-dark d-none d-md-block position-absolute"
                   style={{
                     left: "2rem",
                     bottom: "1rem",
@@ -120,7 +120,7 @@ function Content() {
                   alt="..."
                 ></img>
                 <div
-                  className="carousel-caption text-light d-none d-sm-block position-absolute"
+                  className="carousel-caption text-light d-none d-md-block position-absolute"
                   style={{
                     left: "2rem",
                     bottom: "1rem",
@@ -134,20 +134,39 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/911gt3rs.jpg"
+                  src="../pics/sedan.jpg"
                   className="d-block w-100"
                   alt="..."
                 ></img>
                 <div
-                  className="carousel-caption text-light d-none d-sm-block position-absolute"
+                  className="carousel-caption text-light d-none d-md-block position-absolute"
                   style={{
                     left: "2rem",
                     bottom: "1rem",
                   }}
                 >
-                  <h1 className="d-flex justify-content-start">Xe Đặc Biệt</h1>
+                  <h1 className="d-flex justify-content-start">Xe Sedan</h1>
                   <p className="d-flex fs-3 justify-content-start">
-                    Những loại xe đặc biệt khác
+                    Đầy đủ từ cơ bản tới sang trọng và cao cấp
+                  </p>
+                </div>
+              </div>
+              <div className="carousel-item">
+                <img
+                  src="../pics/911gt3rs.jpg"
+                  className="d-block w-100"
+                  alt="..."
+                ></img>
+                <div
+                  className="carousel-caption text-light d-none d-md-block position-absolute"
+                  style={{
+                    left: "2rem",
+                    bottom: "1rem",
+                  }}
+                >
+                  <h1 className="d-flex justify-content-start">Xe Thể Thao</h1>
+                  <p className="d-flex fs-3 justify-content-start">
+                    Hứa hẹn 1 trải nghiệm khó quên
                   </p>
                 </div>
               </div>
@@ -191,7 +210,7 @@ function Content() {
             }}
           ></img>
           <div
-            className="figure-img fs-1 position-absolute text-end"
+            className="figure-img fs-1 position-absolute text-end d-none d-sm-block"
             style={{
               width: "40%",
               fontSize: "6.5vw",

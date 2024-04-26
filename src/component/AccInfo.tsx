@@ -4,12 +4,15 @@ import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
 import { getDoc } from "firebase/firestore";
 import { db } from "../Auth";
+import { displayAddVehicle } from "./utilities";
 
 function AccInfo() {
   const [userData, setUserData] = useState<any | null>(null);
+  const [revenueData, setRevenueData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const auth = Auth.requestAuth();
   const dataRef = db.collection("UserData").doc(auth?.uid);
+  const RevenueRef = db.collection("Revenue").doc("RevenueData");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -24,6 +27,20 @@ function AccInfo() {
       }
     };
     fetchUser();
+  }, [loading]);
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      const docSnap = await getDoc(RevenueRef);
+      setLoading(true);
+      if (docSnap.exists()) {
+        setRevenueData(docSnap.data());
+        // console.log(docSnap.data());
+      } else {
+        // console.log(docSnap);
+        console.log("No Document");
+      }
+    };
+    fetchRevenue();
   }, [loading]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -70,8 +87,6 @@ function AccInfo() {
     Auth.updateUser(
       {
         email: email.value,
-        experience: 0,
-        efficency: 0,
         license: license.value,
         name: name.value,
         phone: phone.value,
@@ -89,7 +104,7 @@ function AccInfo() {
         <div>
           <ListGroup name={"Thông tin cá nhân"} />
           {/* Info Card */}
-          <div className="card m-5">
+          <div className="card m-5 position-relative">
             <div className="card-body">
               <h5 className="card-title">Thông tin người dùng</h5>
               <p className="card-text">Tên: {userData.name}</p>
@@ -98,11 +113,30 @@ function AccInfo() {
               <p className="card-text">Số điện thoại: {userData.phone}</p>
               <p className="card-text">GPLX hạng: {userData.license}</p>
               {userData.admin && (
-                <p className="card-text text-warning fs-4">
-                  Tài khoản có quyền ADMIN
-                </p>
+                <div>
+                  <p className="card-text text-warning fs-4">
+                    Tài khoản có quyền ADMIN
+                  </p>
+                  <p className="card-text text-warning fs-4">
+                    Doanh thu hiện tại: {revenueData.sum * 1000} (VND)
+                  </p>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      Auth.resetRevenue();
+                    }}
+                  >
+                    RESET DOANH THU
+                  </button>
+                </div>
               )}
             </div>
+            <img
+              src="../../pics/default_avatar.jpg"
+              className="card-img-top p-3 rounded-3 position-absolute end-0 d-none d-sm-block"
+              alt="..."
+              style={{ width: "13rem" }}
+            ></img>
             {/* Update Info Button */}
             <div>
               <button
@@ -111,6 +145,16 @@ function AccInfo() {
                 data-bs-toggle="modal"
                 data-bs-target="#updateInfo"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  className="bi bi-person-fill-gear"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4m9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0" />
+                </svg>
                 Cập nhật thông tin
               </button>
             </div>
@@ -318,7 +362,7 @@ function AccInfo() {
               <h5 className="card-title">Kinh nghiệm (giờ)</h5>
               <p className="card-text">
                 Level: {Math.floor(userData.experience / 100)} (
-                {userData.experience} giờ)
+                {Math.floor(userData.experience * 100) / 100} giờ)
               </p>
               <div
                 className="progress m-3"
@@ -331,19 +375,56 @@ function AccInfo() {
                 ></div>
               </div>
               <p className="card-text">
-                Hiệu suất của tài xế: {userData.efficency * 100}%
+                Hiệu suất của tài xế: {userData.efficiency * 100}%
               </p>
             </div>
           </div>
-          {/* Add Vehicle button */}
+          {/* Delete Account Button */}
+          <div className="text-center p-3">
+            <a
+              type="button"
+              className="btn btn-danger"
+              href="../index.html"
+              onClick={() => {
+                Auth.deleteAuth(auth);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                className="bi bi-person-x-fill"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m6.146-2.854a.5.5 0 0 1 .708 0L14 6.293l1.146-1.147a.5.5 0 0 1 .708.708L14.707 7l1.147 1.146a.5.5 0 0 1-.708.708L14 7.707l-1.146 1.147a.5.5 0 0 1-.708-.708L13.293 7l-1.147-1.146a.5.5 0 0 1 0-.708"
+                />
+              </svg>
+              Xóa tài khoản
+            </a>
+          </div>
+          {/* Add Vehicle Button */}
           {userData.admin && (
-            <div className="position-absolute start-50 translate-middle-x">
+            <div className="text-center p-3">
               <button
                 type="button"
                 className="btn btn-success"
                 data-bs-toggle="modal"
                 data-bs-target="#addVehicle"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  className="bi bi-car-front"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276" />
+                  <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z" />
+                </svg>
                 Thêm Phương Tiện
               </button>
             </div>
@@ -357,145 +438,7 @@ function AccInfo() {
                 </div>
                 <form onSubmit={handleSubmit}>
                   {/* Chọn loại Xe */}
-                  <div className="m-3">
-                    <select className="form-select" id="type" name="type">
-                      <option selected>Chọn loại xe</option>
-                      <option value="Coach">Xe Du Lịch</option>
-                      <option value="Container">Xe Container</option>
-                      <option value="Truck">Xe Tải</option>
-                    </select>
-                  </div>
-                  {/* Mã hiệu */}
-                  <div className="m-3">
-                    <label htmlFor="model" className="form-label">
-                      Mã hiệu
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="model"
-                    ></input>
-                  </div>
-                  {/* Kích thước */}
-                  <div className="m-3">
-                    <label className="form-label" htmlFor="length">
-                      Kích thước (D x R x C)
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="length"
-                        name="length"
-                        maxLength={4}
-                        pattern="[0-9]*"
-                        required
-                      ></input>
-                      <span className="input-group-text">x</span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="width"
-                        name="width"
-                        pattern="[0-9]*"
-                        maxLength={4}
-                      ></input>
-                      <span className="input-group-text">x</span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="height"
-                        id="height"
-                        pattern="[0-9]*"
-                        maxLength={4}
-                      ></input>
-                    </div>
-                  </div>
-                  <div className="row g-2 m-3">
-                    {/* Tải Trọng */}
-                    <div className="col-md-4 mx-auto">
-                      <label htmlFor="weight" className="form-label">
-                        Tải trọng
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="weight"
-                        name="weight"
-                        maxLength={4}
-                        pattern="[0-9]*"
-                        required
-                      ></input>
-                    </div>
-                    {/* Năm sản xuất */}
-                    <div className="col-md-4 mx-auto">
-                      <label htmlFor="yearMade" className="form-label">
-                        Năm sản xuất
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="yearMade"
-                        name="yearMade"
-                        maxLength={4}
-                        pattern="[0-9]*"
-                        required
-                      ></input>
-                    </div>
-                    {/* ODO */}
-                    <div className="col-md-4 mx-auto">
-                      <label htmlFor="odo" className="form-label">
-                        ODO (km)
-                      </label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        id="odo"
-                        name="odo"
-                        required
-                      ></input>
-                    </div>
-                  </div>
-                  {/* Loại nhiên liệu */}
-                  <div className="m-3">
-                    <select className="form-select" id="fuel" name="fuel">
-                      <option selected>Loại xăng sử dụng</option>
-                      <option value="diesel">Diesel</option>
-                      <option value="gas">Xăng</option>
-                      <option value="e85">E85</option>
-                    </select>
-                  </div>
-                  {/* Biển Số Xe */}
-                  <div className="m-3">
-                    <label htmlFor="plate" className="form-label">
-                      Biển Số Xe (Định dạng: 00F12345)
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="plate"
-                      name="plate"
-                      maxLength={8}
-                      pattern="\d{2}[A-Z]\d{5}"
-                      required
-                    ></input>
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Đóng
-                    </button>
-                    <button
-                      type="submit"
-                      name="add"
-                      className="btn btn-primary"
-                    >
-                      Lưu vào hệ thống
-                    </button>
-                  </div>
+                  {displayAddVehicle()}
                 </form>
               </div>
             </div>

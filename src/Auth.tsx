@@ -10,13 +10,14 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  deleteUser,
 } from "firebase/auth";
 import {
   Timestamp,
   addDoc,
   // and,
   // arrayRemove,
-  // arrayUnion,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -31,7 +32,6 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-// import { useState } from "react";
 
 const firebaseCfg = {
   apiKey: "AIzaSyAHG2MnxuKj2sR9JpFiK0EW13mCO6DgiZM",
@@ -57,8 +57,8 @@ interface CredentialProps {
 interface InfoProps {
   admin?: boolean;
   email: string;
-  experience: number;
-  efficency: number;
+  experience?: number;
+  efficiency?: number;
   license: string;
   name: string;
   phone: string;
@@ -66,6 +66,8 @@ interface InfoProps {
     password: string;
     address: string;
   };
+  status?: string;
+  trip?: number;
 }
 export interface VehicleProps {
   type: string;
@@ -102,7 +104,32 @@ enum Location {
   HN = 30,
   VT = 3,
 }
-
+enum License {
+  B = 1,
+  C = 2,
+  D = 3,
+  E = 4,
+  F = 5,
+}
+enum vehicleLicense {
+  SUV = "B",
+  Sedan = "B",
+  Sports = "B",
+  Coach = "D",
+  Truck = "C",
+  Container = "F",
+}
+enum vehiclePrice {
+  SUV = 0.07,
+  Sedan = 0.1,
+  Sports = 0.3,
+  Coach = 0.03,
+  Truck = 0.08,
+  Container = 0.12,
+}
+//
+// ---------------USER FUNCTION
+//
 function CreateAcc(info: InfoProps) {
   const email = info.email;
   const password = info.private.password;
@@ -117,10 +144,13 @@ function CreateAcc(info: InfoProps) {
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          console.log(user.uid);
+          // console.log(user.uid);
           thingsRef
             .doc(user.uid)
-            .set(info)
+            .set({
+              ...info,
+              licenseRank: License[info.license as keyof typeof License],
+            })
             .then(() => {
               console.log("SignUp successful");
               alert(
@@ -147,11 +177,12 @@ function Login({ em, pass }: CredentialProps) {
   const password = pass;
 
   signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
+    .then(() => {
+      // .then((userCredential) => {
       // Signed in
-      const user = userCredential.user;
+      // const user = userCredential.user;
       console.log("SignIn");
-      console.log(user);
+      // console.log(user);
       alert("Bạn đã đăng nhập thành công");
       location.reload();
       // location.replace(location.href);
@@ -180,7 +211,6 @@ function SignOut() {
 
 function Status() {
   const [user] = useAuthState(auth);
-
   if (user) {
     return (
       <div className="dropdown position-sticky bottom-0 start-100 mx-4 z-1">
@@ -248,14 +278,46 @@ function Status() {
   }
 }
 
+function updateUser(info: InfoProps, uid: any) {
+  const dataRef = db.collection("UserData").doc(uid);
+  updateDoc(dataRef, info)
+    .then(() => {
+      console.log("Update user info successful");
+      alert("Bạn đã cập nhật thông tin thành công!");
+      // location.reload();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
 function requestAuth() {
   const [user] = useAuthState(auth);
 
   return user;
 }
-
+function deleteAuth(user: any) {
+  // console.log(user);
+  deleteUser(user)
+    .then(() => {
+      console.log("User deleted");
+      deleteDoc(doc(db, "UserData", user.uid))
+        .then(() => {
+          console.log("User document deleted from database");
+          alert("Tài khoản bị xóa thành công");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+//
+// ---------------VEHICLE FUNCTION
+//
 function uploadVehicle(vehicle: VehicleProps, plate: string) {
-  // console.log(plate);
   const dataRef = doc(
     collection(db, "VehicleData/" + vehicle.type + "/available/"),
     plate
@@ -271,9 +333,7 @@ function uploadVehicle(vehicle: VehicleProps, plate: string) {
     });
 }
 
-// function updateVehicle(vehicle: VehicleProps, oldVehicle: any) {
 function updateVehicle(vehicle: VehicleProps, plate: string) {
-  // console.log(plate);
   const dataRef = db
     .collection("VehicleData/" + vehicle.type + "/available/")
     .doc(plate);
@@ -290,8 +350,6 @@ function updateVehicle(vehicle: VehicleProps, plate: string) {
     });
 }
 function deleteVehicle(vehicle: any) {
-  // console.log("OLD");
-  // console.log(vehicle);
   const dataRef = doc(
     db,
     "VehicleData/" + vehicle.type + "/available/" + vehicle.plate
@@ -307,46 +365,80 @@ function deleteVehicle(vehicle: any) {
       console.log(err);
     });
 }
-function updateUser(info: InfoProps, uid: any) {
-  const dataRef = db.collection("UserData").doc(uid);
-  updateDoc(dataRef, info)
+function maintenanceVehicleReport(report: string, vehicle: any) {
+  const dataRef = db
+    .collection("VehicleData/" + vehicle.type + "/available/")
+    .doc(vehicle.plate);
+  updateDoc(dataRef, { status: "maintenance", problem: report })
     .then(() => {
-      console.log("Update user info successful");
-      alert("Bạn đã cập nhật thông tin thành công!");
-      // location.reload();
+      console.log("Report maintenance vehicle successful");
+      alert("Bạn đã báo cáo vấn đề thành công!");
+      location.reload();
     })
     .catch((err) => {
+      if (err.code === "permission-denied")
+        alert("Bạn cần đăng nhập để sử dụng tính năng này");
       console.log(err);
     });
 }
-
+function fixVehicleReport(report: string, vehicle: any) {
+  const dataRef = db
+    .collection("VehicleData/" + vehicle.type + "/available/")
+    .doc(vehicle.plate);
+  updateDoc(dataRef, {
+    status: "active",
+    maintenanceHistory: arrayUnion(report),
+    problem: "",
+  })
+    .then(() => {
+      console.log("Report maintenance vehicle successful");
+      alert("Bạn đã báo cáo vấn đề thành công!");
+      location.reload();
+    })
+    .catch((err) => {
+      if (err.code === "permission-denied")
+        alert("Bạn cần đăng nhập để sử dụng tính năng này");
+      console.log(err);
+    });
+}
+//
+// ---------------TRIP FUNCTION
+//
 async function createTrip(tripInfo: TripProps) {
-  const vehiclePrice = [0.03, 0.08, 0.12];
   const dist = Math.abs(
     Location[tripInfo.start as keyof typeof Location] -
       Location[tripInfo.end as keyof typeof Location]
   );
-  const timeEst = dist > 0 ? dist : 0.5;
   const vehicleRef = collection(
     db,
     "VehicleData/",
     tripInfo.vehicleType,
     "available"
   );
+  const timeEst = dist > 0 ? dist : 0.5;
   const userRef = collection(db, "UserData");
   const tripRef = collection(db, "TripData");
+  const vehicleType = tripInfo.vehicleType as keyof typeof vehicleLicense;
 
   const userQuery = query(
     userRef,
-    where("experience", ">=", timeEst * 10),
-    where("status", "==", "active"),
-    where("admin", "==", false),
-    orderBy("experience"),
+    where(
+      "licenseRank", // Prioritize the lowest License for optimal selection
+      ">=", // Save the higher License for a higher requirement trip
+      License[vehicleLicense[vehicleType] as keyof typeof License]
+    ),
+    orderBy("licenseRank", "asc"),
+    where("experience", ">=", dist > 0 ? timeEst * 10 : 0), // Query for experience = timeEst * 10
+    orderBy("experience", "desc"), // Order by higher experience
+    where("status", "==", "active"), // Query for active user
+    where("admin", "==", false), // Query for driver not admin
+
     limit(1)
   );
 
   const vehicleQuery = query(
     vehicleRef,
+    // Query for active vehicle
     where("status", "==", "active"),
     limit(1)
   );
@@ -360,22 +452,14 @@ async function createTrip(tripInfo: TripProps) {
       };
     })
   );
+  // console.log(driverInfo[0]);
+
   let vehicleCost = 1;
 
   const vehicleQuerySnapshot = await getDocs(vehicleQuery);
   const vehicleInfo = await Promise.all(
     vehicleQuerySnapshot.docs.map((doc) => {
-      // console.log(doc.id, " => ", doc.data());
-      if (doc.data().type == "Coach") {
-        vehicleCost = vehiclePrice[0];
-      }
-      if (doc.data().type == "Truck") {
-        vehicleCost = vehiclePrice[1];
-      }
-      if (doc.data().type == "Container") {
-        vehicleCost = vehiclePrice[2];
-      }
-      // }
+      vehicleCost = vehiclePrice[doc.data().type as keyof typeof vehiclePrice];
       return {
         plate: doc.id,
         model: doc.data().model,
@@ -385,7 +469,10 @@ async function createTrip(tripInfo: TripProps) {
   if (driverInfo.length > 0 && vehicleInfo.length > 0) {
     updateDoc(doc(userRef, driverInfo[0].uid), { status: "busy" });
     updateDoc(doc(vehicleRef, vehicleInfo[0].plate), { status: "busy" });
-
+    // Cost đã được tính vào tiền loại xe và xăng xe, các chi phí trừ khác
+    // Vì đã bao gồm loại xe nên hạng GPLX của tài xế cũng đã bao gồm
+    // Nên tiền tài xế cũng đã được gộp chung vào hệ số vehicleCost
+    // Lương nhân viên không tính theo kinh nghiệm vì như thế sẽ mất công bằng
     tripInfo.cost = timeEst * 1000 * vehicleCost;
     tripInfo.status = "pending";
     tripInfo.driver = {
@@ -399,7 +486,6 @@ async function createTrip(tripInfo: TripProps) {
     tripInfo.timeEst = timeEst;
     // console.log(tripInfo.cost);
     addDoc(tripRef, tripInfo)
-      // addDoc(tripRef, { ...tripInfo, timeStart: Timestamp.now().toDate() })
       .then(() => {
         console.log("Create trip successful");
         alert("Gửi yêu cầu chuyến đi thành công, vui lòng chờ xác nhận");
@@ -429,6 +515,7 @@ function finishTrip(time: Date, trip: any) {
   const H = Math.floor((trip.timeEst / exp) * 100) / 100;
   const tripRef = doc(db, "TripData", trip.tripId);
   const userRef = doc(db, "UserData", trip.userUID);
+  // console.log(exp);
   const vehicleRef = doc(
     db,
     "VehicleData",
@@ -436,12 +523,13 @@ function finishTrip(time: Date, trip: any) {
     "available",
     trip.vehiclePlate
   );
+  // 1. Get User Doc
   getDoc(userRef)
-    .then((doc) => {
-      const currEfficiency = doc.data()?.efficiency;
+    .then((userDoc) => {
+      const currEfficiency = userDoc.data()?.efficiency;
       const calcEfficiency = Math.floor(((currEfficiency + H) / 2) * 100) / 100;
       const newEfficiency = calcEfficiency > 1 ? 1 : calcEfficiency;
-      // console.log(newEfficiency);
+      // 2. Update User Doc
       updateDoc(userRef, {
         status: "active",
         efficiency: newEfficiency,
@@ -449,11 +537,46 @@ function finishTrip(time: Date, trip: any) {
         experience: increment(exp),
       }).then(() => {
         console.log("Update status of User successful");
+        // 3. Update Vehicle Doc
         updateDoc(vehicleRef, { status: "active" }).then(() => {
-          deleteDoc(tripRef);
-          console.log("Update status of Vehicle successful");
-          alert("Xác nhận hoàn thành chuyến đi thành công");
-          location.reload();
+          // 4. Store Trip Completed Doc
+          getDoc(tripRef)
+            .then((tripDoc) => {
+              const completeRef = doc(db, "Revenue", "RevenueData");
+              const completedTrip = tripDoc.data();
+              // 5. Update Sum Revenue
+              updateDoc(completeRef, { sum: increment(completedTrip?.cost) })
+                .then(() => {
+                  // 6. Store Completed Trip
+                  setDoc(
+                    doc(
+                      db,
+                      "Revenue",
+                      "RevenueData",
+                      "TripCompleted",
+                      trip.tripId
+                    ),
+                    { ...completedTrip, timeFinish: time }
+                  )
+                    .then(() => {
+                      // 7. Complete and delete current Trip Doc
+                      console.log("Store completed trip successful");
+                      deleteDoc(tripRef);
+                      console.log("Update status of Vehicle successful");
+                      alert("Xác nhận hoàn thành chuyến đi thành công");
+                      location.reload();
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         });
       });
     })
@@ -505,20 +628,39 @@ function rejectTrip(trip: any) {
     );
   });
 }
-
+//
+// --------------- Revenue FUNCTION
+//
+function resetRevenue() {
+  const revenueRef = doc(db, "Revenue", "RevenueData");
+  // 5. Update Sum Revenue
+  updateDoc(revenueRef, { sum: 0 })
+    .then(() => {
+      console.log("Reset Revenue successful");
+      alert("Reset doanh thu thành công");
+      location.reload();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
 const UserFunc = {
   Login,
   SignOut,
   Status,
   CreateAcc,
   requestAuth,
+  deleteAuth,
   uploadVehicle,
   updateUser,
   updateVehicle,
   deleteVehicle,
+  maintenanceVehicleReport,
+  fixVehicleReport,
   createTrip,
   finishTrip,
   confirmTrip,
   rejectTrip,
+  resetRevenue,
 };
 export default UserFunc;

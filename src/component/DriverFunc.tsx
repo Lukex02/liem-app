@@ -15,7 +15,7 @@ function DriverFunc() {
     const fetchUser = async () => {
       const querySnapshot = await getDocs(dataRef);
       const datas = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
+        uid: doc.id,
         ...doc.data(),
       }));
       setDriverData(datas);
@@ -24,37 +24,54 @@ function DriverFunc() {
     };
     fetchUser();
   }, [loading]);
+
   return (
     <>
       {driverData ? (
         <div>
           <ListGroup name={"Đội Tài Xế"} />
           <div className="row row-cols-auto mx-auto">
-            {driverData.map((item: any) => (
-              <div className="card m-4 col" style={{ width: "400px" }}>
-                {item.status == "active" && (
-                  <span className="position-absolute top-0 start-100 translate-middle p-3 bg-success border border-light rounded-circle"></span>
-                )}
-                {item.status == "busy" && (
-                  <span className="position-absolute top-0 start-100 translate-middle p-3 bg-danger border border-light rounded-circle"></span>
-                )}
-                {item.status == "maintenance" && (
-                  <span className="position-absolute top-0 start-100 translate-middle p-3 bg-warning border border-light rounded-circle"></span>
-                )}
-                <div className="card-body">
-                  <h5 className="card-title text-uppercase">{item.name}</h5>
-                  <p className="card-text">Email: {item.email}</p>
-                  <p className="card-text">Số điện thoại: {item.phone}</p>
-                  <p className="card-text">GPLX hiện có: {item.license}</p>
-                  <p className="card-text">
-                    Kinh nghiệm: {item.experience} (giờ)
-                  </p>
-                  {/* <a type="button" className="btn btn-primary">
-                    Chi tiết (in dev)
-                  </a> */}
-                </div>
-              </div>
-            ))}
+            {driverData.map(
+              (item: any, index: any) =>
+                !item.admin && (
+                  <div
+                    className="card p-0 m-4 col"
+                    style={{ width: "20rem" }}
+                    key={"card" + index}
+                  >
+                    <div className="card-body p-3">
+                      <img
+                        src="../../pics/default_avatar.jpg"
+                        className="card-img-top rounded-3"
+                        alt="..."
+                      ></img>
+                      {item.status == "active" && (
+                        <span className="position-absolute top-0 start-100 translate-middle p-3 bg-success border border-light rounded-circle"></span>
+                      )}
+                      {item.status == "busy" && (
+                        <span className="position-absolute top-0 start-100 translate-middle p-3 bg-danger border border-light rounded-circle"></span>
+                      )}
+                      {item.status == "maintenance" && (
+                        <span className="position-absolute top-0 start-100 translate-middle p-3 bg-warning border border-light rounded-circle"></span>
+                      )}
+                      <div className="card-body">
+                        <h5 className="card-title text-uppercase">
+                          {item.name}
+                        </h5>
+                        <p className="card-text">Email: {item.email}</p>
+                        <p className="card-text">Số điện thoại: {item.phone}</p>
+                        <p className="card-text">
+                          GPLX hiện có: {item.license}
+                        </p>
+                        <p className="card-text">
+                          Kinh nghiệm: {item.experience} (giờ)
+                        </p>
+                        <p className="card-text">Trạng thái: {item.status}</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+            )}
           </div>
         </div>
       ) : (
