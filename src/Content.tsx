@@ -30,7 +30,7 @@ function Content() {
         </div>
         {/* Welcome Background */}
         <div className="container-fluid mb-3 p-0 m-0 position-relative">
-          <img src="../pics/homefull.jpg" className="img-fluid"></img>
+          <img src={"/pics/homefull.jpg"} className="img-fluid"></img>
           <div
             className="figure-img display-2 position-absolute"
             style={{
@@ -54,11 +54,15 @@ function Content() {
         {/* Vehicle Showcase */}
         <h1 className="p-3 m-0 text-center">Phương tiện</h1>
         <div className="py-3">
-          <div id="carouselIntro" className="carousel slide mx-auto">
+          <div
+            id="carouselIntro"
+            className="carousel slide mx-auto"
+            data-bs-ride="carousel"
+          >
             <div className="carousel-inner">
               <div className="carousel-item active position-relative">
                 <img
-                  src="../pics/truck.jpg"
+                  src={"/pics/truck.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -69,7 +73,7 @@ function Content() {
                     bottom: "1rem",
                   }}
                 >
-                  <h1 className="d-flex justify-content-start">Xe tải</h1>
+                  <h1 className="d-flex justify-content-start">Xe Tải</h1>
                   <p className="d-flex fs-3 justify-content-start">
                     Đội ngũ xe tải hiện đại đa dạng
                   </p>
@@ -77,7 +81,7 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/container.jpg"
+                  src={"/pics/container.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -96,7 +100,7 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/coach.jpg"
+                  src={"/pics/coach.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -115,7 +119,7 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/lx600.jpg"
+                  src={"/pics/lx600.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -126,7 +130,7 @@ function Content() {
                     bottom: "1rem",
                   }}
                 >
-                  <h1 className="d-flex justify-content-start">SUV</h1>
+                  <h1 className="d-flex justify-content-start">Xe SUV</h1>
                   <p className="d-flex fs-3 justify-content-start">
                     Đa dạng từ 4 chỗ bình dân tới 7 chỗ hạng sang
                   </p>
@@ -134,7 +138,7 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/sedan.jpg"
+                  src={"/pics/sedan.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -153,7 +157,7 @@ function Content() {
               </div>
               <div className="carousel-item">
                 <img
-                  src="../pics/911gt3rs.jpg"
+                  src={"/pics/911gt3rs.jpg"}
                   className="d-block w-100"
                   alt="..."
                 ></img>
@@ -176,6 +180,9 @@ function Content() {
               type="button"
               data-bs-target="#carouselIntro"
               data-bs-slide="prev"
+              style={{
+                objectFit: "cover",
+              }}
             >
               <span
                 className="carousel-control-prev-icon"
@@ -201,8 +208,7 @@ function Content() {
         <h1 className="p-3 m-0 text-center">Nhân viên</h1>
         <div className="container-fluid text-center pt-3 pb-3 p-0 m-0 position-relative">
           <img
-            // src="../pics/the-liems.jpg"
-            src="../pics/driver.jpg"
+            src={"/pics/driver.jpg"}
             className="img-fluid"
             style={{
               width: "100%",
@@ -224,17 +230,16 @@ function Content() {
         {/* Recruiting */}
         <div className="container-fluid d-flex justify-content-center my-5 position-relative">
           <img
-            src="../pics/recruit.jpg"
+            src={"/pics/recruit.jpg"}
             className="img-fluid rounded-5 mx-auto d-block m-4 mb-0"
             style={{
-              width: "70%",
-              height: "70%",
+              width: "40rem",
             }}
           ></img>
         </div>
         <p className="fs-4 text-center">
           Đặt chuyến đi ngay{" "}
-          <a className="breadcrumb-item" href="../Trip/trip.html">
+          <a className="breadcrumb-item" href="/trip.html">
             tại đây
           </a>
         </p>

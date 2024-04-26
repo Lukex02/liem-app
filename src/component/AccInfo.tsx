@@ -132,7 +132,7 @@ function AccInfo() {
               )}
             </div>
             <img
-              src="../../pics/default_avatar.jpg"
+              src={"/pics/default_avatar.jpg"}
               className="card-img-top p-3 rounded-3 position-absolute end-0 d-none d-sm-block"
               alt="..."
               style={{ width: "13rem" }}
@@ -384,7 +384,7 @@ function AccInfo() {
             <a
               type="button"
               className="btn btn-danger"
-              href="../index.html"
+              href="/index.html"
               onClick={() => {
                 Auth.deleteAuth(auth);
               }}

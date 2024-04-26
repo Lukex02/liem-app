@@ -1,0 +1,63 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "UserData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "admin",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "experience",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "UserData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "admin",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "licenseRank",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "UserData",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "admin",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "licenseRank",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "experience",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

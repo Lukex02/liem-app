@@ -14,8 +14,7 @@
         "source": "**",
         "destination": "/index.html"
       }
-    ],
-    "predeploy": ["npm run build"]
+    ]
   },
   "emulators": {
     "singleProjectMode": true,
@@ -23,5 +22,9 @@
       "port": 5000,
       "host": "0.0.0.0"
     }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }

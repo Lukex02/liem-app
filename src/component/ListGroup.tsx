@@ -60,16 +60,16 @@ function ListGroup({ name }: Props) {
         </a>
         <div className="navbar-collapse collapse" id="navbarToggler">
           <ul className="nav-underline nav-pills nav-fill navbar-nav me-auto mb-2 mb-lg-0 navbar-nav-scroll">
-            <a className="nav-item nav-link" href="../../index.html">
+            <a className="nav-item nav-link" href="/">
               Trang Chủ
             </a>
-            <a className="nav-item nav-link" href="../../Trip/trip.html">
+            <a className="nav-item nav-link" href="/trip">
               Chuyến Đi
             </a>
-            <a className="nav-item nav-link" href="../../Vehicle/vehicle.html">
+            <a className="nav-item nav-link" href="/vehicle">
               Đội Xe
             </a>
-            <a className="nav-item nav-link" href="../../Driver/driver.html">
+            <a className="nav-item nav-link" href="/driver">
               Đội Tài Xế
             </a>
           </ul>

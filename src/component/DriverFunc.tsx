@@ -41,7 +41,7 @@ function DriverFunc() {
                   >
                     <div className="card-body p-3">
                       <img
-                        src="../../pics/default_avatar.jpg"
+                        src={"/pics/default_avatar.jpg"}
                         className="card-img-top rounded-3"
                         alt="..."
                       ></img>
@@ -64,7 +64,8 @@ function DriverFunc() {
                           GPLX hiện có: {item.license}
                         </p>
                         <p className="card-text">
-                          Kinh nghiệm: {item.experience} (giờ)
+                          Kinh nghiệm: {Math.floor(item.experience * 100) / 100}{" "}
+                          (giờ)
                         </p>
                         <p className="card-text">Trạng thái: {item.status}</p>
                       </div>

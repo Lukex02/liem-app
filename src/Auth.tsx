@@ -237,7 +237,7 @@ function Status() {
         </button>
         <ul className="dropdown-menu dropdown-menu-end">
           <li>
-            <a type="button" className="dropdown-item" href="../account.html">
+            <a type="button" className="dropdown-item" href="/account">
               Thông tin cá nhân
             </a>
           </li>
@@ -245,7 +245,7 @@ function Status() {
             <a
               type="button"
               className="dropdown-item"
-              href="../index.html"
+              href="/"
               onClick={SignOut}
             >
               Đăng Xuất

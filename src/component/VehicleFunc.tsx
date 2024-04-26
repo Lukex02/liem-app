@@ -446,7 +446,7 @@ function VehicleFunc() {
                           <h4 className="card-title mt-3 ms-3">{item.model}</h4>
                           <div className="card-body">
                             <img
-                              src="../../pics/default_car.png"
+                              src={"/pics/default_car.png"}
                               className="card-img-top p-3 rounded-3"
                               alt="..."
                             ></img>
