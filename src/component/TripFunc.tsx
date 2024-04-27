@@ -1,9 +1,10 @@
 import { Timestamp, getDoc, getDocs } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import Auth, { db } from "../Auth";
+import AuthFunction, { db } from "../Auth";
 import ListGroup from "./ListGroup";
 
 function TripFunc() {
+  const Auth = new AuthFunction();
   const [tripData, setTripData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);

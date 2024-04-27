@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import Auth from "./Auth";
+import AuthClass from "./Auth";
 import ListGroup from "./component/ListGroup";
 
 function Content() {
+  const Auth = new AuthClass();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

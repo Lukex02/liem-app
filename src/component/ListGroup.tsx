@@ -1,12 +1,11 @@
-// import Form from "react-bootstrap/Form";
-// import { useState } from "react";
-import Auth from "../Auth";
+import AuthFunction from "../Auth";
 
 interface Props {
   name: string;
 }
 
 function ListGroup({ name }: Props) {
+  const Auth = new AuthFunction();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -24,21 +23,23 @@ function ListGroup({ name }: Props) {
     const phone = form.elements.namedItem("phone") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
     const license = form.elements.namedItem("license") as HTMLInputElement;
-    Auth.CreateAcc({
-      admin: false,
-      email: email.value,
-      experience: 0,
-      efficiency: 1,
-      license: license.value,
-      name: name.value,
-      phone: phone.value,
-      private: {
+    Auth.CreateAcc(
+      {
+        admin: false,
+        email: email.value,
+        experience: 0,
+        efficiency: 1,
+        license: license.value,
+        name: name.value,
+        phone: phone.value,
+        status: "active",
+        trip: 0,
+      },
+      {
         password: password.value,
         address: address.value,
-      },
-      status: "active",
-      trip: 0,
-    });
+      }
+    );
   };
 
   return (

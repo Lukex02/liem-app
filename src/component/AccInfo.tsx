@@ -1,12 +1,13 @@
-import Auth from "../Auth";
+import AuthFunction from "../Auth";
 import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
-import { getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../Auth";
 import { displayAddVehicle } from "./utilities";
 
 function AccInfo() {
+  const Auth = new AuthFunction();
   const [userData, setUserData] = useState<any | null>(null);
   const [revenueData, setRevenueData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,8 +20,16 @@ function AccInfo() {
       const docSnap = await getDoc(dataRef);
       setLoading(true);
       if (docSnap.exists()) {
-        setUserData(docSnap.data());
         // console.log(docSnap.data());
+        const privateData = await getDoc(
+          doc(dataRef, "private", "privateData")
+        );
+        if (privateData.exists()) {
+          setUserData({ ...docSnap.data(), ...privateData.data() });
+        } else {
+          // console.log(docSnap);
+          console.log("No Document");
+        }
       } else {
         // console.log(docSnap);
         console.log("No Document");
@@ -28,6 +37,7 @@ function AccInfo() {
     };
     fetchUser();
   }, [loading]);
+  // console.log(userData);
   useEffect(() => {
     const fetchRevenue = async () => {
       const docSnap = await getDoc(RevenueRef);
@@ -79,7 +89,6 @@ function AccInfo() {
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
-    const password = form.elements.namedItem("pass") as HTMLInputElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
     const phone = form.elements.namedItem("phone") as HTMLInputElement;
     const address = form.elements.namedItem("address") as HTMLInputElement;
@@ -90,13 +99,43 @@ function AccInfo() {
         license: license.value,
         name: name.value,
         phone: phone.value,
-        private: {
-          password: password.value,
-          address: address.value,
-        },
       },
-      auth?.uid
+      {
+        address: address.value,
+      },
+      auth
     );
+  };
+  const handleDeleteAcc = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const oldPassword = form.elements.namedItem("oldPass") as HTMLInputElement;
+    if (oldPassword.value == userData.password) {
+      Auth.deleteAuth(oldPassword.value);
+    } else {
+      console.log("Old password doesn't match");
+      alert("Mật khẩu cũ không khớp");
+    }
+  };
+  const handleUpdatePass = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const oldPassword = form.elements.namedItem("oldPass") as HTMLInputElement;
+    const newPassword = form.elements.namedItem("newPass") as HTMLInputElement;
+    const newRePassword = form.elements.namedItem(
+      "newRePass"
+    ) as HTMLInputElement;
+    if (oldPassword.value == userData.password) {
+      if (newPassword.value == newRePassword.value) {
+        Auth.updatePass(newPassword.value, oldPassword.value);
+      } else {
+        console.log("New password doesn't match");
+        alert("Mật khẩu mới và nhập lại mật khẩu mới không khớp");
+      }
+    } else {
+      console.log("Old password doesn't match");
+      alert("Mật khẩu cũ không khớp");
+    }
   };
   return (
     <>
@@ -109,7 +148,7 @@ function AccInfo() {
               <h5 className="card-title">Thông tin người dùng</h5>
               <p className="card-text">Tên: {userData.name}</p>
               <p className="card-text">Email: {userData.email}</p>
-              <p className="card-text">Địa chỉ: {userData.private.address}</p>
+              <p className="card-text">Địa chỉ: {userData.address}</p>
               <p className="card-text">Số điện thoại: {userData.phone}</p>
               <p className="card-text">GPLX hạng: {userData.license}</p>
               {userData.admin && (
@@ -141,7 +180,7 @@ function AccInfo() {
             <div>
               <button
                 type="button"
-                className="btn btn-primary m-3"
+                className="btn btn-outline-primary m-3"
                 data-bs-toggle="modal"
                 data-bs-target="#updateInfo"
               >
@@ -158,12 +197,32 @@ function AccInfo() {
                 Cập nhật thông tin
               </button>
             </div>
+            <div>
+              <button
+                type="button"
+                className="btn btn-outline-warning m-3"
+                data-bs-toggle="modal"
+                data-bs-target="#updatePass"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  className="bi bi-person-lock"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 5.996V14H3s-1 0-1-1 1-4 6-4q.845.002 1.544.107a4.5 4.5 0 0 0-.803.918A11 11 0 0 0 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664zM9 13a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1" />
+                </svg>
+                Cập nhật mật khẩu
+              </button>
+            </div>
             {/* Update Info Modal */}
             <div className="modal fade" id="updateInfo">
               <div className="modal-dialog">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Thêm Phương Tiện</h5>
+                    <h5 className="modal-title">Cập nhật thông tin</h5>
                   </div>
                   <form className="was-validated" onSubmit={handleUpdate}>
                     <div className="modal-body">
@@ -200,8 +259,9 @@ function AccInfo() {
                           className="form-control"
                           id="updatePasswordarea"
                           placeholder="******"
-                          defaultValue={userData.private.password}
+                          defaultValue={userData.password}
                           required
+                          disabled
                         ></input>
                         <div className="invalid-feedback">
                           Vui lòng nhập mật khẩu ít nhất 6 ký tự.
@@ -260,7 +320,7 @@ function AccInfo() {
                           className="form-control"
                           id="updateAddressarea"
                           placeholder="Đường XYZ P6 Q9"
-                          defaultValue={userData.private.addr}
+                          defaultValue={userData.address}
                           required
                         ></input>
                         <div className="invalid-feedback">
@@ -269,6 +329,22 @@ function AccInfo() {
                       </div>
                       {/* GPLX */}
                       <p className="text">GPLX</p>
+                      <div className="form-check mb-3">
+                        <input
+                          type="radio"
+                          name="license"
+                          className="form-check-input"
+                          id="updateLicenseCheck_B"
+                          value="B"
+                          required
+                        ></input>
+                        <label
+                          className="form-check-label"
+                          htmlFor="updateLicenseCheck_B"
+                        >
+                          Hạng B
+                        </label>
+                      </div>
                       <div className="form-check mb-3">
                         <input
                           type="radio"
@@ -355,6 +431,90 @@ function AccInfo() {
                 </div>
               </div>
             </div>
+            {/* Update Password Modal */}
+            <div className="modal fade" id="updatePass">
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Thay đổi mật khẩu</h5>
+                  </div>
+                  <form className="was-validated" onSubmit={handleUpdatePass}>
+                    <div className="modal-body">
+                      {/* Old Password */}
+                      <div className="mb-3">
+                        <label htmlFor="oldPasswordarea" className="form-label">
+                          Nhập lại mật khẩu cũ
+                        </label>
+                        <input
+                          type="password"
+                          name="oldPass"
+                          minLength={6}
+                          className="form-control"
+                          id="oldPasswordarea"
+                          placeholder="******"
+                          required
+                        ></input>
+                        <div className="invalid-feedback">
+                          Vui lòng nhập mật khẩu ít nhất 6 ký tự.
+                        </div>
+                      </div>
+                      {/* New Password */}
+                      <div className="mb-3">
+                        <label htmlFor="newPasswordarea" className="form-label">
+                          Nhập mật khẩu mới
+                        </label>
+                        <input
+                          type="password"
+                          name="newPass"
+                          minLength={6}
+                          className="form-control"
+                          id="newPasswordarea"
+                          placeholder="******"
+                          required
+                        ></input>
+                        <div className="invalid-feedback">
+                          Vui lòng nhập mật khẩu ít nhất 6 ký tự.
+                        </div>
+                      </div>
+                      {/* New Repeat Password */}
+                      <div className="mb-3">
+                        <label
+                          htmlFor="newRePasswordarea"
+                          className="form-label"
+                        >
+                          Nhập lại mật khẩu mới
+                        </label>
+                        <input
+                          type="password"
+                          name="newRePass"
+                          minLength={6}
+                          className="form-control"
+                          id="newRePasswordarea"
+                          placeholder="******"
+                          required
+                        ></input>
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                      >
+                        Đóng
+                      </button>
+                      <button
+                        type="submit"
+                        name="add"
+                        className="btn btn-danger"
+                      >
+                        Cập nhật
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
           {/* Progress Bar */}
           <div className="card m-5">
@@ -384,10 +544,8 @@ function AccInfo() {
             <a
               type="button"
               className="btn btn-danger"
-              href="/index.html"
-              onClick={() => {
-                Auth.deleteAuth(auth);
-              }}
+              data-bs-toggle="modal"
+              data-bs-target="#deleteAcc"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -404,6 +562,53 @@ function AccInfo() {
               </svg>
               Xóa tài khoản
             </a>
+          </div>
+          {/* Update Password Modal */}
+          <div className="modal fade" id="deleteAcc">
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Thay đổi mật khẩu</h5>
+                </div>
+                <form className="was-validated" onSubmit={handleDeleteAcc}>
+                  <div className="modal-body">
+                    {/* Old Password */}
+                    <div className="mb-3">
+                      <label
+                        htmlFor="oldPasswordDeletearea"
+                        className="form-label"
+                      >
+                        Nhập lại mật khẩu cũ
+                      </label>
+                      <input
+                        type="password"
+                        name="oldPass"
+                        minLength={6}
+                        className="form-control"
+                        id="oldPasswordDeletearea"
+                        placeholder="******"
+                        required
+                      ></input>
+                      <div className="invalid-feedback">
+                        Vui lòng nhập mật khẩu ít nhất 6 ký tự.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Đóng
+                    </button>
+                    <button type="submit" className="btn btn-danger">
+                      Xóa
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
           {/* Add Vehicle Button */}
           {userData.admin && (

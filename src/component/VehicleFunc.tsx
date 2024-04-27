@@ -2,10 +2,11 @@ import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
 import { collection, getDoc, getDocs } from "firebase/firestore";
-import Auth, { db, VehicleProps } from "../Auth";
+import AuthFunction, { db, VehicleProps } from "../Auth";
 import { displayAddVehicle } from "./utilities";
 
 function VehicleFunc() {
+  const Auth = new AuthFunction();
   const [vehicleData, setVehicleData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState({ item: null, type: null });
