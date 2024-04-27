@@ -550,20 +550,31 @@ function VehicleFunc() {
                                   Bảo dưỡng
                                 </button>
                               )}
-                              <button
-                                type="button"
-                                className="btn btn-danger m-2"
-                                key={"remove_" + index}
-                                onClick={() => {
-                                  setOldVehicle({
-                                    type: type.id,
-                                    plate: item.id,
-                                  });
-                                  setDeleteVehicle(true);
-                                }}
-                              >
-                                Xóa
-                              </button>
+                              {item.status == "busy" ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-danger m-2"
+                                  key={"remove_" + index}
+                                  disabled
+                                >
+                                  Xóa
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-danger m-2"
+                                  key={"remove_" + index}
+                                  onClick={() => {
+                                    setOldVehicle({
+                                      type: type.id,
+                                      plate: item.id,
+                                    });
+                                    setDeleteVehicle(true);
+                                  }}
+                                >
+                                  Xóa
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
