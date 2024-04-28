@@ -3,17 +3,16 @@ import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../Auth";
 import { displayAddVehicle } from "./utilities";
 
 function AccInfo() {
-  const Auth = new AuthFunction();
+  const Auth = AuthFunction.getInstance();
   const [userData, setUserData] = useState<any | null>(null);
   const [revenueData, setRevenueData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const auth = Auth.requestAuth();
-  const dataRef = db.collection("UserData").doc(auth?.uid);
-  const RevenueRef = db.collection("Revenue").doc("RevenueData");
+  const dataRef = Auth.db.collection("UserData").doc(auth?.uid);
+  const RevenueRef = Auth.db.collection("Revenue").doc("RevenueData");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -102,8 +101,7 @@ function AccInfo() {
       },
       {
         address: address.value,
-      },
-      auth
+      }
     );
   };
   const handleDeleteAcc = (e: React.FormEvent<HTMLFormElement>) => {

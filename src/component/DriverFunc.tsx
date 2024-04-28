@@ -3,12 +3,13 @@ import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../Auth";
+import AuthFunction from "../Auth";
 
 function DriverFunc() {
+  const Auth = AuthFunction.getInstance();
   const [driverData, setDriverData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
-  const dataRef = collection(db, "UserData");
+  const dataRef = collection(Auth.db, "UserData");
 
   useEffect(() => {
     // console.log("useEffect has used");

@@ -6,10 +6,9 @@ service cloud.firestore {
       allow read, write, delete, create: if false;
     }
     match /UserData/{docId} {
-    	allow read, update: if true;
-      match /private {
-      	allow read: if isSignedIn();
-        allow write: if false;
+    	allow read: if true;
+      match /private/privateData {
+      	allow read, write: if request.auth.uid == docId;
         // allow read, create: if isSignedIn() && authUid() == docId;
       }
       allow write: if isSignedIn();

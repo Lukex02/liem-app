@@ -1,10 +1,11 @@
 import { Timestamp, getDoc, getDocs } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import AuthFunction, { db } from "../Auth";
+import AuthFunction from "../Auth";
 import ListGroup from "./ListGroup";
 
 function TripFunc() {
-  const Auth = new AuthFunction();
+  const Auth = AuthFunction.getInstance();
+  const db = Auth.db;
   const [tripData, setTripData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(false);
@@ -40,7 +41,7 @@ function TripFunc() {
       setUserLoading(true);
     };
     fetchUser();
-  }, [userLoading]);
+  });
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -198,73 +199,78 @@ function TripFunc() {
                       Trạng thái: {item.status}
                     </p>
                   </div>
-                  {userData &&
-                    ((item.status == "active" && (
-                      <div className="card-footer">
-                        <button
-                          className="btn btn-outline-success m-2"
-                          key={"successBut_" + index}
-                          data-bs-toggle="modal"
-                          data-bs-target="#confirmTrip"
-                          onClick={() => {
-                            setConfirmTrip({
-                              timeStart: item.timeStart.toDate(),
-                              timeEst: item.timeEst,
-                              tripId: item.id,
-                              userUID: item.driver.uid,
-                              vehicleType: item.vehicleType,
-                              vehiclePlate: item.vehicle.plate,
-                            });
-                          }}
-                        >
-                          Hoàn thành chuyến đi
-                        </button>
-                        <button
-                          className="btn btn-outline-danger m-2"
-                          key={"rejectBut_" + index}
-                          onClick={() => {
-                            Auth.rejectTrip({
-                              rejectFirst: false,
-                              tripId: item.id,
-                              userUID: item.driver.uid,
-                              vehicleType: item.vehicleType,
-                              vehiclePlate: item.vehicle.plate,
-                            });
-                          }}
-                        >
-                          Hủy chuyến đi
-                        </button>
-                      </div>
-                    )) ||
-                      (item.status == "pending" &&
-                        (userData.admin || item.driver.uid == userData.uid) && (
-                          <div className="card-footer">
-                            <button
-                              className="btn btn-outline-warning m-2"
-                              key={"confirmBut_" + index}
-                              onClick={() => {
-                                Auth.confirmTrip(item.id);
-                              }}
-                            >
-                              Xác nhận chuyến đi
-                            </button>
-                            <button
-                              className="btn btn-outline-danger m-2"
-                              key={"rejectBut_" + index}
-                              onClick={() => {
-                                Auth.rejectTrip({
-                                  rejectFirst: true,
-                                  tripId: item.id,
-                                  userUID: item.driver.uid,
-                                  vehicleType: item.vehicleType,
-                                  vehiclePlate: item.vehicle.plate,
-                                });
-                              }}
-                            >
-                              Từ chối
-                            </button>
-                          </div>
-                        )))}
+                  <div className="card-footer">
+                    {userData &&
+                      ((item.status == "active" && (
+                        <div>
+                          <button
+                            className="btn btn-outline-success m-2"
+                            key={"successBut_" + index}
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmTrip"
+                            onClick={() => {
+                              setConfirmTrip({
+                                timeStart: item.timeStart.toDate(),
+                                timeEst: item.timeEst,
+                                tripId: item.id,
+                                userUID: item.driver.uid,
+                                vehicleType: item.vehicleType,
+                                vehiclePlate: item.vehicle.plate,
+                              });
+                            }}
+                          >
+                            Hoàn thành chuyến đi
+                          </button>
+                          <button
+                            className="btn btn-outline-danger m-2"
+                            key={"rejectBut_" + index}
+                            onClick={() => {
+                              Auth.rejectTrip({
+                                rejectFirst: false,
+                                tripId: item.id,
+                                userUID: item.driver.uid,
+                                vehicleType: item.vehicleType,
+                                vehiclePlate: item.vehicle.plate,
+                              });
+                            }}
+                          >
+                            Hủy chuyến đi
+                          </button>
+                          //{" "}
+                        </div>
+                      )) ||
+                        (item.status == "pending" &&
+                          (userData.admin ||
+                            item.driver.uid == userData.uid) && (
+                            // <div className="card-footer">
+                            <div>
+                              <button
+                                className="btn btn-outline-warning m-2"
+                                key={"confirmBut_" + index}
+                                onClick={() => {
+                                  Auth.confirmTrip(item.id);
+                                }}
+                              >
+                                Xác nhận chuyến đi
+                              </button>
+                              <button
+                                className="btn btn-outline-danger m-2"
+                                key={"rejectBut_" + index}
+                                onClick={() => {
+                                  Auth.rejectTrip({
+                                    rejectFirst: true,
+                                    tripId: item.id,
+                                    userUID: item.driver.uid,
+                                    vehicleType: item.vehicleType,
+                                    vehiclePlate: item.vehicle.plate,
+                                  });
+                                }}
+                              >
+                                Từ chối
+                              </button>
+                            </div>
+                          )))}
+                  </div>
                 </div>
               ))}
             </div>

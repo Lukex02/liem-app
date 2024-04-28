@@ -2,11 +2,12 @@ import "../style/utilities.css";
 import ListGroup from "../component/ListGroup";
 import { useEffect, useState } from "react";
 import { collection, getDoc, getDocs } from "firebase/firestore";
-import AuthFunction, { db, VehicleProps } from "../Auth";
+import AuthFunction, { VehicleProps } from "../Auth";
 import { displayAddVehicle } from "./utilities";
 
 function VehicleFunc() {
-  const Auth = new AuthFunction();
+  const Auth = AuthFunction.getInstance();
+  const db = Auth.db;
   const [vehicleData, setVehicleData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [modalData, setModalData] = useState({ item: null, type: null });
@@ -15,9 +16,9 @@ function VehicleFunc() {
   const [maintenanceModalOpen, setMaintenanceModalOpen] = useState(false);
   const [fixModalOpen, setFixModalOpen] = useState(false);
   const [deleteVehicle, setDeleteVehicle] = useState(false);
-  const dataRef = collection(db, "VehicleData");
-  const auth = Auth.requestAuth();
   const [userData, setUserData] = useState<any | null>(null);
+  const auth = Auth.requestAuth();
+  const dataRef = collection(db, "VehicleData");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

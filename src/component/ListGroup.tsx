@@ -5,16 +5,15 @@ interface Props {
 }
 
 function ListGroup({ name }: Props) {
-  const Auth = new AuthFunction();
+  const Auth = AuthFunction.getInstance();
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;
     const password = form.elements.namedItem("pass") as HTMLInputElement;
-    Auth.Login({ em: email.value, pass: password.value });
+    Auth.Login(email.value, password.value);
   };
   const createAcc = (e: React.FormEvent<HTMLFormElement>) => {
-    // console.log("abc");
     e.preventDefault();
     const form = e.currentTarget;
     const email = form.elements.namedItem("email") as HTMLInputElement;

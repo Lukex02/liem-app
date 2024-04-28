@@ -44,12 +44,7 @@ const firebaseCfg = {
 firebase.initializeApp(firebaseCfg);
 
 const auth = getAuth();
-export const db = firebase.firestore();
 
-interface CredentialProps {
-  em: string;
-  pass: string;
-}
 interface InfoProps {
   admin?: boolean;
   email: string;
@@ -76,7 +71,6 @@ export interface VehicleProps {
   weight: number;
   yearMade: number;
 }
-
 interface TripProps {
   start: string;
   end: string;
@@ -84,7 +78,21 @@ interface TripProps {
   vehicleType: string;
   [key: string]: any;
 }
-
+interface TripRejectProps {
+  rejectFirst: boolean;
+  tripId: string;
+  userUID: string;
+  vehicleType: string;
+  vehiclePlate: string;
+}
+interface TripFinishProps {
+  timeStart: number;
+  timeEst: number;
+  tripId: string;
+  userUID: string;
+  vehicleType: string;
+  vehiclePlate: string;
+}
 enum Location {
   HCMC = 1,
   HN = 30,
@@ -115,6 +123,16 @@ enum vehiclePrice {
 }
 
 class Auth {
+  db = firebase.firestore();
+  // SINGLETON
+  private static instance: Auth;
+  private constructor() {}
+  public static getInstance(): Auth {
+    if (!Auth.instance) {
+      Auth.instance = new Auth();
+    }
+    return Auth.instance;
+  }
   //
   // ---------------USER FUNCTION
   //
@@ -133,9 +151,9 @@ class Auth {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        const thingsRef = doc(db, "UserData", user.uid);
+        const thingsRef = doc(this.db, "UserData", user.uid);
         const privateDocRef = doc(
-          db,
+          this.db,
           "UserData",
           user.uid,
           "private",
@@ -169,25 +187,16 @@ class Auth {
         alert("Đăng ký xảy ra lỗi, vui lòng đăng ký lại");
       });
   }
-  Login({ em, pass }: CredentialProps) {
-    const email = em;
-    const password = pass;
-
+  Login(email: string, password: string) {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        // .then((userCredential) => {
         // Signed in
-        // const user = userCredential.user;
         console.log("SignIn");
-        // console.log(user);
         alert("Bạn đã đăng nhập thành công");
         location.reload();
-        // location.replace(location.href);
       })
       .catch((error) => {
-        // const errorCode = error.code;
         const errorMessage = error.message;
-        // console.log("asdf", errorCode);
         console.log(errorMessage);
         alert("Tài khoản này chưa được đăng ký hoặc sai thông tin");
       });
@@ -276,31 +285,33 @@ class Auth {
     info: InfoProps,
     privateData: {
       address: string;
-    },
-    auth: any
+    }
   ) {
-    const dataRef = db.collection("UserData").doc(auth.uid);
-    const privateDocRef = doc(
-      db,
-      "UserData",
-      auth.uid,
-      "private",
-      "privateData"
-    );
-    updateDoc(dataRef, {
-      ...info,
-      licenseRank: License[info.license as keyof typeof License],
-    })
-      .then(() => {
-        updateDoc(privateDocRef, privateData).then(() => {
-          console.log("Update user info successful");
-          alert("Bạn đã cập nhật thông tin thành công!");
-          location.reload();
-        });
+    const user = auth.currentUser;
+    if (user) {
+      const dataRef = this.db.collection("UserData").doc(user.uid);
+      const privateDocRef = doc(
+        this.db,
+        "UserData",
+        user.uid,
+        "private",
+        "privateData"
+      );
+      updateDoc(dataRef, {
+        ...info,
+        licenseRank: License[info.license as keyof typeof License],
       })
-      .catch((err) => {
-        console.log(err);
-      });
+        .then(() => {
+          updateDoc(privateDocRef, privateData).then(() => {
+            console.log("Update user info successful");
+            alert("Bạn đã cập nhật thông tin thành công!");
+            location.reload();
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }
   updatePass(newPassword: string, oldPassword: string) {
     // console.log(newPassword);
@@ -313,7 +324,7 @@ class Auth {
             .then(() => {
               console.log("Change password successful");
               updateDoc(
-                doc(db, "UserData", user.uid, "private", "privateData"),
+                doc(this.db, "UserData", user.uid, "private", "privateData"),
                 {
                   password: newPassword,
                 }
@@ -345,9 +356,11 @@ class Auth {
       const credential = EmailAuthProvider.credential(user.email, oldPassword);
       reauthenticateWithCredential(user, credential)
         .then(() => {
-          deleteDoc(doc(db, "UserData", user.uid))
+          deleteDoc(doc(this.db, "UserData", user.uid))
             .then(() => {
-              deleteDoc(doc(db, "UserData", user.uid, "private", "privateData"))
+              deleteDoc(
+                doc(this.db, "UserData", user.uid, "private", "privateData")
+              )
                 .then(() => {
                   console.log("User document deleted from database");
                   deleteUser(user).then(() => {
@@ -375,7 +388,7 @@ class Auth {
   //
   uploadVehicle(vehicle: VehicleProps, plate: string) {
     const dataRef = doc(
-      collection(db, "VehicleData/" + vehicle.type + "/available/"),
+      collection(this.db, "VehicleData/" + vehicle.type + "/available/"),
       plate
     );
     setDoc(dataRef, vehicle)
@@ -389,7 +402,7 @@ class Auth {
       });
   }
   updateVehicle(vehicle: VehicleProps, plate: string) {
-    const dataRef = db
+    const dataRef = this.db
       .collection("VehicleData/" + vehicle.type + "/available/")
       .doc(plate);
     updateDoc(dataRef, vehicle)
@@ -404,9 +417,9 @@ class Auth {
         console.log(err);
       });
   }
-  deleteVehicle(vehicle: any) {
+  deleteVehicle(vehicle: { type: string; plate: string }) {
     const dataRef = doc(
-      db,
+      this.db,
       "VehicleData/" + vehicle.type + "/available/" + vehicle.plate
     );
     deleteDoc(dataRef)
@@ -420,8 +433,11 @@ class Auth {
         console.log(err);
       });
   }
-  maintenanceVehicleReport(report: string, vehicle: any) {
-    const dataRef = db
+  maintenanceVehicleReport(
+    report: string,
+    vehicle: { type: string; plate: string }
+  ) {
+    const dataRef = this.db
       .collection("VehicleData/" + vehicle.type + "/available/")
       .doc(vehicle.plate);
     updateDoc(dataRef, { status: "maintenance", problem: report })
@@ -437,7 +453,7 @@ class Auth {
       });
   }
   fixVehicleReport(report: string, vehicle: any) {
-    const dataRef = db
+    const dataRef = this.db
       .collection("VehicleData/" + vehicle.type + "/available/")
       .doc(vehicle.plate);
     updateDoc(dataRef, {
@@ -465,14 +481,14 @@ class Auth {
         Location[tripInfo.end as keyof typeof Location]
     );
     const vehicleRef = collection(
-      db,
+      this.db,
       "VehicleData/",
       tripInfo.vehicleType,
       "available"
     );
     const timeEst = dist > 0 ? dist : 0.5;
-    const userRef = collection(db, "UserData");
-    const tripRef = collection(db, "TripData");
+    const userRef = collection(this.db, "UserData");
+    const tripRef = collection(this.db, "TripData");
     const vehicleType = tripInfo.vehicleType as keyof typeof vehicleLicense;
 
     const userQuery = query(
@@ -484,10 +500,9 @@ class Auth {
       ),
       orderBy("licenseRank", "asc"),
       where("experience", ">=", dist > 0 ? timeEst * 10 : 0), // Query for experience = timeEst * 10
-      orderBy("experience", "desc"), // Order by higher experience
+      orderBy("experience", "asc"), // Order by lower experience for lower experience driver chances
       where("status", "==", "active"), // Query for active user
       where("admin", "==", false), // Query for driver not admin
-
       limit(1)
     );
     const vehicleQuery = query(
@@ -557,7 +572,7 @@ class Auth {
       );
     }
   }
-  finishTrip(time: Date, trip: any) {
+  finishTrip(time: Date, trip: TripFinishProps) {
     // Exp count in minutes instead hours for research purposes
     // To convert it to hours divide by 60 one more
     const exp =
@@ -565,11 +580,11 @@ class Auth {
     // If late then timeEst > exp => degrade H
     // If early then timeEst < exp => H > 1 => upgrade H
     const H = Math.floor((trip.timeEst / exp) * 100) / 100;
-    const tripRef = doc(db, "TripData", trip.tripId);
-    const userRef = doc(db, "UserData", trip.userUID);
+    const tripRef = doc(this.db, "TripData", trip.tripId);
+    const userRef = doc(this.db, "UserData", trip.userUID);
     // console.log(exp);
     const vehicleRef = doc(
-      db,
+      this.db,
       "VehicleData",
       trip.vehicleType,
       "available",
@@ -595,7 +610,7 @@ class Auth {
             // 4. Store Trip Completed Doc
             getDoc(tripRef)
               .then((tripDoc) => {
-                const completeRef = doc(db, "Revenue", "RevenueData");
+                const completeRef = doc(this.db, "Revenue", "RevenueData");
                 const completedTrip = tripDoc.data();
                 // 5. Update Sum Revenue
                 updateDoc(completeRef, { sum: increment(completedTrip?.cost) })
@@ -603,7 +618,7 @@ class Auth {
                     // 6. Store Completed Trip
                     setDoc(
                       doc(
-                        db,
+                        this.db,
                         "Revenue",
                         "RevenueData",
                         "TripCompleted",
@@ -638,8 +653,8 @@ class Auth {
         console.log(err);
       });
   }
-  confirmTrip(tripId: any) {
-    const tripRef = doc(db, "TripData", tripId);
+  confirmTrip(tripId: string) {
+    const tripRef = doc(this.db, "TripData", tripId);
     updateDoc(tripRef, {
       status: "active",
       timeStart: Timestamp.now().toDate(),
@@ -653,11 +668,11 @@ class Auth {
         console.log(err);
       });
   }
-  rejectTrip(trip: any) {
-    const tripRef = doc(db, "TripData", trip.tripId);
-    const userRef = doc(db, "UserData", trip.userUID);
+  rejectTrip(trip: TripRejectProps) {
+    const tripRef = doc(this.db, "TripData", trip.tripId);
+    const userRef = doc(this.db, "UserData", trip.userUID);
     const vehicleRef = doc(
-      db,
+      this.db,
       "VehicleData",
       trip.vehicleType,
       "available",
@@ -688,7 +703,7 @@ class Auth {
   // --------------- Revenue FUNCTION
   //
   resetRevenue() {
-    const revenueRef = doc(db, "Revenue", "RevenueData");
+    const revenueRef = doc(this.db, "Revenue", "RevenueData");
     // 5. Update Sum Revenue
     updateDoc(revenueRef, { sum: 0 })
       .then(() => {
