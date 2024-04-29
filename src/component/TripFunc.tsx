@@ -236,7 +236,6 @@ function TripFunc() {
                           >
                             Hủy chuyến đi
                           </button>
-                          //{" "}
                         </div>
                       )) ||
                         (item.status == "pending" &&

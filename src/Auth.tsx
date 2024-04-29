@@ -606,7 +606,10 @@ class Auth {
         }).then(() => {
           console.log("Update status of User successful");
           // 3. Update Vehicle Doc
-          updateDoc(vehicleRef, { status: "active" }).then(() => {
+          updateDoc(vehicleRef, {
+            status: "active",
+            odometer: increment(trip.timeEst * 50),
+          }).then(() => {
             // 4. Store Trip Completed Doc
             getDoc(tripRef)
               .then((tripDoc) => {

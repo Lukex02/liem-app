@@ -520,6 +520,9 @@ function AccInfo() {
               <h5 className="card-title">
                 Kinh nghiệm: {Math.floor(userData.experience * 100) / 100} (giờ)
               </h5>
+              <p className="card-text">
+                Số chuyến đi đã thực hiện: {userData.trip}
+              </p>
               <div className="progress m-3">
                 <div
                   className="progress-bar"
