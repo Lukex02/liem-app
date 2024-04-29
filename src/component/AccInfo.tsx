@@ -517,19 +517,13 @@ function AccInfo() {
           {/* Progress Bar */}
           <div className="card m-5">
             <div className="card-body">
-              <h5 className="card-title">Kinh nghiệm (giờ)</h5>
-              <p className="card-text">
-                Level: {Math.floor(userData.experience / 100)} (
-                {Math.floor(userData.experience * 100) / 100} giờ)
-              </p>
-              <div
-                className="progress m-3"
-                role="progressbar"
-                aria-label="Experience"
-              >
+              <h5 className="card-title">
+                Kinh nghiệm: {Math.floor(userData.experience * 100) / 100} (giờ)
+              </h5>
+              <div className="progress m-3">
                 <div
                   className="progress-bar"
-                  style={{ width: `${userData.experience % 100}%` }}
+                  style={{ width: `${userData.efficiency * 100}%` }}
                 ></div>
               </div>
               <p className="card-text">

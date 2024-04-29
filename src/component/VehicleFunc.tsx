@@ -489,7 +489,7 @@ function VehicleFunc() {
                               </div>
                             )}
                           </div>
-                          {userData?.admin && (
+                          {userData.admin && (
                             <div className="card-footer">
                               <button
                                 type="button"
@@ -578,6 +578,27 @@ function VehicleFunc() {
                               )}
                             </div>
                           )}
+                          {userData &&
+                            !userData.admin &&
+                            item.status == "active" && (
+                              <div className="card-footer">
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-warning mx-2"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#maintenanceReport"
+                                  onClick={() => {
+                                    setOldVehicle({
+                                      type: type.id,
+                                      plate: item.id,
+                                    });
+                                    setMaintenanceModalOpen(true);
+                                  }}
+                                >
+                                  Bảo dưỡng
+                                </button>
+                              </div>
+                            )}
                         </div>
                       );
                     })}
