@@ -240,7 +240,7 @@ function Content() {
         </div>
         <p className="fs-4 text-center">
           Đặt chuyến đi ngay{" "}
-          <a className="breadcrumb-item" href="/trip.html">
+          <a className="breadcrumb-item" href="/trip">
             tại đây
           </a>
         </p>
