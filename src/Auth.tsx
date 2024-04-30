@@ -608,7 +608,7 @@ class Auth {
           // 3. Update Vehicle Doc
           updateDoc(vehicleRef, {
             status: "active",
-            odometer: increment(trip.timeEst * 50),
+            odometer: increment(trip.timeEst * 70),
           }).then(() => {
             // 4. Store Trip Completed Doc
             getDoc(tripRef)
