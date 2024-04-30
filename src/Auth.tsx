@@ -618,29 +618,29 @@ class Auth {
                 // 5. Update Sum Revenue
                 updateDoc(completeRef, { sum: increment(completedTrip?.cost) })
                   .then(() => {
-                    // 6. Store Completed Trip
-                    setDoc(
-                      doc(
-                        this.db,
-                        "Revenue",
-                        "RevenueData",
-                        "TripCompleted",
-                        trip.tripId
-                      ),
-                      { ...completedTrip, timeFinish: time }
-                    )
-                      .then(() => {
-                        // 7. Complete and delete current Trip Doc
-                        console.log("Store completed trip successful");
-                        deleteDoc(tripRef);
-                        console.log("Update status of Vehicle successful");
-                        alert("Xác nhận hoàn thành chuyến đi thành công");
-                        location.reload();
-                      })
-                      .catch((err) => {
-                        console.log(err);
-                      });
+                    // 6. Store Completed Trip (Disabling due to free billing scaling issue)
+                    // setDoc(
+                    //   doc(
+                    //     this.db,
+                    //     "Revenue",
+                    //     "RevenueData",
+                    //     "TripCompleted",
+                    //     trip.tripId
+                    //   ),
+                    //   { ...completedTrip, timeFinish: time }
+                    // )
+                    //   .then(() => {
+                    // 7. Complete and delete current Trip Doc
+                    console.log("Store completed trip successful");
+                    deleteDoc(tripRef);
+                    console.log("Update status of Vehicle successful");
+                    alert("Xác nhận hoàn thành chuyến đi thành công");
+                    location.reload();
                   })
+                  // .catch((err) => {
+                  //   console.log(err);
+                  // });
+                  // })
                   .catch((err) => {
                     console.log(err);
                   });

@@ -54,7 +54,7 @@
         },
         {
           "fieldPath": "experience",
-          "order": "DESCENDING"
+          "order": "ASCENDING"
         }
       ]
     }
