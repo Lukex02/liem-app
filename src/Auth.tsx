@@ -114,8 +114,8 @@ enum vehicleLicense {
   Container = "F",
 }
 enum vehiclePrice {
-  SUV = 0.07,
-  Sedan = 0.1,
+  SUV = 0.09,
+  Sedan = 0.09,
   Sports = 0.3,
   Coach = 0.03,
   Truck = 0.08,
