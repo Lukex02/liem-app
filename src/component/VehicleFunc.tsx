@@ -415,6 +415,7 @@ function VehicleFunc() {
     }
     handleDelete();
   }, [deleteVehicle]);
+  document.title = "Đội Xe";
   return (
     <>
       {vehicleData ? (

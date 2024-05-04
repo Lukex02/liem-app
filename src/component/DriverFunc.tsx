@@ -25,7 +25,7 @@ function DriverFunc() {
     };
     fetchUser();
   }, [loading]);
-
+  document.title = "Đội Tài Xế";
   return (
     <>
       {driverData ? (

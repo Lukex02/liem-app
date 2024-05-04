@@ -135,6 +135,7 @@ function AccInfo() {
       alert("Mật khẩu cũ không khớp");
     }
   };
+  document.title = "Tài Khoản";
   return (
     <>
       {userData ? (
@@ -579,12 +580,12 @@ function AccInfo() {
               </button>
             </div>
           )}
-          {/* Update Password Modal */}
+          {/* Delete Account Modal */}
           <div className="modal fade" id="deleteAcc">
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Thay đổi mật khẩu</h5>
+                  <h5 className="modal-title">Xóa tài khoản</h5>
                 </div>
                 <form className="was-validated" onSubmit={handleDeleteAcc}>
                   <div className="modal-body">

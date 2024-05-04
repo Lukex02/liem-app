@@ -61,7 +61,7 @@ function TripFunc() {
     const time = Timestamp.now().toDate();
     Auth.finishTrip(time, confirmTrip);
   };
-
+  document.title = "Chuyến Đi";
   return (
     <>
       {tripData && userLoading ? (
